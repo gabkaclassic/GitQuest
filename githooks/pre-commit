@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Get a list of staged Go files
+GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+
+if [ -n "$GO_FILES" ]; then
+  echo "Running go fmt on staged Go files..."
+  # Run go fmt on each staged Go file
+  for file in $GO_FILES; do
+    go fmt "$file"
+    # Re-add the formatted file to the staging area
+    git add "$file"
+  done
+  echo "go fmt completed."
+fi
