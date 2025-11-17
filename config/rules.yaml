@@ -1,0 +1,65 @@
+reeval: true
+
+rules:
+  - name: "EarlyBird"
+    description: "5 коммитов за последние 24 часа"
+    event_type: "commit"
+    window: 24h
+    count: 5
+    condition: ">="
+    streak: false
+    reward: 50
+
+  - name: "MergeMaster"
+    description: "10 смерженных merge request за всё время"
+    event_type: "mr_merged"
+    window: 0s
+    count: 10
+    condition: ">="
+    streak: false
+    reward: 200
+
+  - name: "BugHunter"
+    description: "Закрыл хотя бы один issue за неделю"
+    event_type: "ISSUE_CLOSED"
+    window: 168h
+    count: 1
+    condition: ">="
+    streak: false
+    reward: 75
+
+  - name: "Streaker"
+    description: "Каждый день есть хотя бы один коммит, 7 дней подряд"
+    event_type: "commit"
+    window: 24h
+    count: 1
+    condition: ">="
+    streak: true
+    reward: 300
+
+  - name: "Reviewer"
+    description: "Оставил 3 ревью за последние 48 часов"
+    event_type: "review_submitted"
+    window: 48h
+    count: 3
+    condition: ">="
+    streak: false
+    reward: 120
+
+  - name: "Commentator"
+    description: "Написал 20 комментариев за всё время"
+    event_type: "comment_added"
+    window: 0s
+    count: 20
+    condition: ">="
+    streak: false
+    reward: 40
+
+  - name: "TagWizard"
+    description: "Создал хотя бы один тег за последние 30 дней"
+    event_type: "tag_created"
+    window: 720h
+    count: 1
+    condition: ">="
+    streak: false
+    reward: 60

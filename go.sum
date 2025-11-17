@@ -1,0 +1,7 @@
+github.com/caarlos0/env/v10 v10.0.0 h1:yIHUBZGsyqCnpTkbjk8asUlx6RFhhEs+h7TOBdgdzXA=
+github.com/caarlos0/env/v10 v10.0.0/go.mod h1:ZfulV76NvVPw3tm591U4SwL3Xx9ldzBP9aGxzeN7G18=
+github.com/gabkaclassic/metrics v0.0.0-20251110200337-b02b3512b879 h1:U+v0rRB8sT2BY4JcS50rVnsHy+TeRKkGv/kAqVhYiOA=
+github.com/gabkaclassic/metrics v0.0.0-20251110200337-b02b3512b879/go.mod h1:oX6LhYx3Yre56Dc8NpwBJXSj7VKv/d2gOlH6ePRK5uc=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
