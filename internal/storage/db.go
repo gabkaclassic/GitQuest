@@ -10,7 +10,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 func NewDBStorage(cfg config.DB) (*sql.DB, error) {
@@ -73,4 +73,50 @@ func runMigrations(db *sql.DB, cfg config.DB) error {
 	slog.Info("Migrations finished", slog.String("filepath", migrationsPath))
 
 	return nil
+}
+
+func IsUniqueConstraintViolation(err error) bool {
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "23505" // unique_violation
+	}
+	return false
+}
+
+func GetUniqueConstraintName(err error) string {
+	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+		return pqErr.Constraint
+	}
+	return ""
+}
+
+func IsForeignKeyViolation(err error) bool {
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "23503" // foreign_key_violation
+	}
+	return false
+}
+
+func IsNotNullViolation(err error) bool {
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "23502" // not_null_violation
+	}
+	return false
+}
+
+func IsCheckConstraintViolation(err error) bool {
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "23514" // check_violation
+	}
+	return false
+}
+
+func IsStringDataRightTruncation(err error) bool {
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "22001" // string_data_right_truncation
+	}
+	return false
+}
+
+func IsNotFoundError(err error) bool {
+	return err == sql.ErrNoRows
 }
