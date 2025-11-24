@@ -4,13 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/gabkaclassic/metrics/pkg/httpserver"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/gabkaclassic/metrics/pkg/httpserver"
 
 	"github.com/gabkaclassic/GitQuest/internal/config"
 	"github.com/gabkaclassic/GitQuest/internal/handler"
@@ -85,8 +86,14 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 		return nil, fmt.Errorf("failed to create event repository: %w", err)
 	}
 
+	userRepository, err := repository.NewUserRepository(connection)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user repository: %w", err)
+	}
+
 	return &repositoriesList{
 		EventRepository: eventRepository,
+		UserRepository:  userRepository,
 	}, nil
 }
 
@@ -97,8 +104,14 @@ func initializeServices(repositories *repositoriesList) (*servicesList, error) {
 		return nil, fmt.Errorf("failed to create event service: %w", err)
 	}
 
+	userService, err := service.NewUserService(repositories.UserRepository)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user service: %w", err)
+	}
+
 	return &servicesList{
 		EventService: eventService,
+		UserService:  userService,
 	}, nil
 }
 
@@ -117,8 +130,10 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 
 type repositoriesList struct {
 	EventRepository repository.EventRepository
+	UserRepository  repository.UserRepository
 }
 
 type servicesList struct {
 	EventService service.EventService
+	UserService  service.UserService
 }
