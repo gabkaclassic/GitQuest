@@ -20,6 +20,7 @@ type (
 		DB     DB
 		Rules  Rules
 		Cache  Cache
+		Jobs   Jobs
 	}
 	Server struct {
 		Address string `env:"ADDRESS" envDefault:"localhost:8080"`
@@ -44,6 +45,13 @@ type (
 	Rules struct {
 		Reeval bool
 		Rules  []dto.Rule
+	}
+	Jobs struct {
+		Cleanup Cleanup
+	}
+	Cleanup struct {
+		Timeout  time.Duration `env:"CLEANUP_TIMEOUT" envDefault:"10"`
+		Interval time.Duration `env:"CLEANUP_INTERVAL" envDefault:"10"`
 	}
 )
 
@@ -102,6 +110,9 @@ func ParseConfig() (*Config, error) {
 	cacheUsername := flag.String("cache-user", cfg.Cache.Username, "Cache username")
 	cachePassword := flag.String("cache-pass", cfg.Cache.Password, "Cache password")
 
+	cleanupJobTimeout := flag.Duration("cleanup-timeout", cfg.Jobs.Cleanup.Timeout, "Cleanup old events background job timeout")
+	cleanupJobInterval := flag.Duration("cleanup-interval", cfg.Jobs.Cleanup.Interval, "Cleanup old events background job interval")
+
 	flag.Parse()
 
 	flag.Visit(func(f *flag.Flag) {
@@ -133,6 +144,11 @@ func ParseConfig() (*Config, error) {
 			cfg.Cache.Username = *cacheUsername
 		case "cache-pass":
 			cfg.Cache.Password = *cachePassword
+
+		case "cleanup-timeout":
+			cfg.Jobs.Cleanup.Timeout = *cleanupJobTimeout
+		case "cleanup-interval":
+			cfg.Jobs.Cleanup.Interval = *cleanupJobInterval
 
 		}
 	})

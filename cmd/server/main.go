@@ -4,16 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gabkaclassic/metrics/pkg/httpserver"
 
+	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/config"
 	"github.com/gabkaclassic/GitQuest/internal/handler"
 	"github.com/gabkaclassic/GitQuest/internal/repository"
@@ -53,8 +54,15 @@ func run() error {
 		return fmt.Errorf("failed to initialize repositories: %w", err)
 	}
 
+	slog.Debug("Initialize cache storage...")
+	cacheStorage, err := storage.NewCacheStorage(cfg.Cache)
+
+	if err != nil {
+		return fmt.Errorf("failed to initialize cache storage: %w", err)
+	}
+
 	slog.Debug("Initialize cache client...")
-	cacheClient, err := storage.NewCacheStorage(cfg.Cache)
+	cacheClient, err := cache.NewEventCacheClient(cacheStorage)
 
 	if err != nil {
 		return fmt.Errorf("failed to initialize cache client: %w", err)
@@ -87,6 +95,7 @@ func run() error {
 	defer stop()
 
 	go server.Run(ctx, stop)
+	go startBackgroundJobs(ctx, cacheClient, cfg.Jobs)
 
 	<-ctx.Done()
 	slog.Info("Shutdown complete")
@@ -118,7 +127,7 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 	}, nil
 }
 
-func initializeServices(repositories *repositoriesList, cacheClient *redis.Client) (*servicesList, error) {
+func initializeServices(repositories *repositoriesList, cacheClient cache.EventCacheClient) (*servicesList, error) {
 
 	eventService, err := service.NewEventService(repositories.EventRepository, cacheClient)
 	if err != nil {
@@ -153,6 +162,27 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 	return handler.SetupRouter(&handler.RouterConfiguration{
 		EventHandler: eventsHandler,
 	}), nil
+}
+
+func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, cfg config.Jobs) {
+	cleanupTicker := time.NewTicker(cfg.Cleanup.Interval)
+	defer cleanupTicker.Stop()
+
+	for {
+		select {
+		case <-cleanupTicker.C:
+			ctx, cancel := context.WithTimeout(ctx, cfg.Cleanup.Timeout)
+			defer cancel()
+			err := eventCacheClient.CleanupOldEventsFromCache(ctx)
+			if err != nil {
+				slog.Error("Cleanup old events error", slog.Any("error", err))
+			}
+			slog.Info("Cleanup completed")
+		case <-ctx.Done():
+			slog.Info("Background jobs shutting down...")
+			return
+		}
+	}
 }
 
 type repositoriesList struct {
