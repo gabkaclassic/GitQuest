@@ -67,6 +67,13 @@ func run() error {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
 
+	slog.Debug("Save rules...")
+	err = services.RuleService.SaveAll(&cfg.Rules.Rules)
+
+	if err != nil {
+		return fmt.Errorf("failed to save rules: %w", err)
+	}
+
 	router, err := setupRouter(services)
 	if err != nil {
 		return fmt.Errorf("failed to setup HTTP router: %w", err)
@@ -123,9 +130,15 @@ func initializeServices(repositories *repositoriesList, cacheClient *redis.Clien
 		return nil, fmt.Errorf("failed to create user service: %w", err)
 	}
 
+	ruleService, err := service.NewRuleService(repositories.RuleRepository)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create rule service: %w", err)
+	}
+
 	return &servicesList{
 		EventService: eventService,
 		UserService:  userService,
+		RuleService:  ruleService,
 	}, nil
 }
 
@@ -151,4 +164,5 @@ type repositoriesList struct {
 type servicesList struct {
 	EventService service.EventService
 	UserService  service.UserService
+	RuleService  service.RuleService
 }
