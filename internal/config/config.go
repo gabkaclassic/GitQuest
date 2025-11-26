@@ -19,6 +19,7 @@ type (
 		Log    Log
 		DB     DB
 		Rules  Rules
+		Cache  Cache
 	}
 	Server struct {
 		Address string `env:"ADDRESS" envDefault:"localhost:8080"`
@@ -27,6 +28,12 @@ type (
 		Driver         string `env:"DB_DRIVER" envDefault:"postgres"`
 		DSN            string `env:"DATABASE_DSN"`
 		MigrationsPath string `env:"DB_MIGRATIONS_PATH" envDefault:"./migrations"`
+	}
+	Cache struct {
+		Address  string `env:"CACHE_ADDRESS" envDefault:"localhost:6379"`
+		Username string `env:"CACHE_USER" envDefault:""`
+		Password string `env:"CACHE_PASSWORD" envDefault:""`
+		DB       int    `env:"CACHE_DB" envDefault:"0"`
 	}
 	Log struct {
 		Level   string `env:"LOG_LEVEL" envDefault:"info"`
@@ -90,6 +97,11 @@ func ParseConfig() (*Config, error) {
 	dbDriver := flag.String("db-driver", cfg.DB.Driver, "Database driver")
 	dbMigrationsPath := flag.String("db-migrations-path", cfg.DB.MigrationsPath, "Migrations file path")
 
+	cacheAddress := flag.String("cache-addr", cfg.Cache.Address, "Cache address")
+	cacheDB := flag.Int("cache-db", cfg.Cache.DB, "Cache db")
+	cacheUsername := flag.String("cache-user", cfg.Cache.Username, "Cache username")
+	cachePassword := flag.String("cache-pass", cfg.Cache.Password, "Cache password")
+
 	flag.Parse()
 
 	flag.Visit(func(f *flag.Flag) {
@@ -112,6 +124,15 @@ func ParseConfig() (*Config, error) {
 			cfg.DB.DSN = *dbDSN
 		case "db-migrations-path":
 			cfg.DB.MigrationsPath = *dbMigrationsPath
+
+		case "cache-addr":
+			cfg.Cache.Address = *cacheAddress
+		case "cache-db":
+			cfg.Cache.DB = *cacheDB
+		case "cache-user":
+			cfg.Cache.Username = *cacheUsername
+		case "cache-pass":
+			cfg.Cache.Password = *cachePassword
 
 		}
 	})

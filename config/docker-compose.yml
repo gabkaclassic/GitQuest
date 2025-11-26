@@ -14,12 +14,20 @@ services:
       - gitquest_postgres_data:/var/lib/postgresql/data
     networks:
       - gitquest_network
+  redis:
+    image: redis:7.2
+    container_name: redis
+    volumes:
+      - gitquest_redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - gitquest_network
 
 volumes:
-  redis_data:
+  gitquest_redis_data:
   gitquest_postgres_data:
 
 networks:
-  keycloak_network:
   gitquest_network:
     driver: bridge

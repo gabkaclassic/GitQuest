@@ -32,7 +32,7 @@ func (handler *EventHandler) SaveAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	saveErr := handler.service.SaveAll(&events)
+	saveErr := handler.service.SaveAll(r.Context(), &events)
 
 	if saveErr != nil {
 		api.RespondError(w, saveErr)
