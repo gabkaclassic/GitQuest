@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"log/slog"
 	"net/http"
@@ -39,21 +40,28 @@ func run() error {
 
 	slog.Debug("DB connection setup...")
 
-	storage, err := storage.NewDBStorage(cfg.DB)
+	db, err := storage.NewDBStorage(cfg.DB)
 	if err != nil {
 		return fmt.Errorf("failed to initialize database storage: %w", err)
 	}
-	defer storage.Close()
+	defer db.Close()
 
 	slog.Debug("Initialize repositories...")
-	repositories, err := initializeRepositories(storage)
+	repositories, err := initializeRepositories(db)
 
 	if err != nil {
 		return fmt.Errorf("failed to initialize repositories: %w", err)
 	}
 
+	slog.Debug("Initialize cache client...")
+	cacheClient, err := storage.NewCacheStorage(cfg.Cache)
+
+	if err != nil {
+		return fmt.Errorf("failed to initialize cache client: %w", err)
+	}
+
 	slog.Debug("Initialize services...")
-	services, err := initializeServices(repositories)
+	services, err := initializeServices(repositories, cacheClient)
 
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
@@ -91,15 +99,21 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 		return nil, fmt.Errorf("failed to create user repository: %w", err)
 	}
 
+	ruleRepository, err := repository.NewRuleRepository(connection)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create rule repository: %w", err)
+	}
+
 	return &repositoriesList{
 		EventRepository: eventRepository,
 		UserRepository:  userRepository,
+		RuleRepository:  ruleRepository,
 	}, nil
 }
 
-func initializeServices(repositories *repositoriesList) (*servicesList, error) {
+func initializeServices(repositories *repositoriesList, cacheClient *redis.Client) (*servicesList, error) {
 
-	eventService, err := service.NewEventService(repositories.EventRepository)
+	eventService, err := service.NewEventService(repositories.EventRepository, cacheClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create event service: %w", err)
 	}
@@ -131,6 +145,7 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 type repositoriesList struct {
 	EventRepository repository.EventRepository
 	UserRepository  repository.UserRepository
+	RuleRepository  repository.RuleRepository
 }
 
 type servicesList struct {

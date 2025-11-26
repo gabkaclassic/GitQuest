@@ -1,7 +1,10 @@
 package dto
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"time"
 )
 
@@ -18,7 +21,15 @@ type (
 		Condition   Condition `yaml:"condition"`
 		Streak      bool      `yaml:"streak"`
 		Reward      int       `yaml:"reward"`
-		Hash        string    `yaml:"-"`
+		Version     string    `yaml:"-"`
+	}
+	ruleHash struct {
+		EventType EventType `yaml:"event_type"`
+		Window    TimeRange `yaml:"window"`
+		Count     int       `yaml:"count"`
+		Condition Condition `yaml:"condition"`
+		Streak    bool      `yaml:"streak"`
+		Reward    int       `yaml:"reward"`
 	}
 )
 
@@ -38,6 +49,60 @@ var validConditions = map[Condition]struct{}{
 	EQ:  {},
 	LT:  {},
 	LTE: {},
+}
+
+func (r *Rule) UnmarshalYAML(unmarshal func(any) error) error {
+	type ruleAlias struct {
+		Name        string    `yaml:"name"`
+		Description string    `yaml:"description"`
+		EventType   EventType `yaml:"event_type"`
+		Window      TimeRange `yaml:"window"`
+		Count       int       `yaml:"count"`
+		Condition   Condition `yaml:"condition"`
+		Streak      bool      `yaml:"streak"`
+		Reward      int       `yaml:"reward"`
+	}
+
+	var tmp ruleAlias
+	if err := unmarshal(&tmp); err != nil {
+		return err
+	}
+
+	r.Name = tmp.Name
+	r.Description = tmp.Description
+	r.EventType = tmp.EventType
+	r.Window = tmp.Window
+	r.Count = tmp.Count
+	r.Condition = tmp.Condition
+	r.Streak = tmp.Streak
+	r.Reward = tmp.Reward
+
+	hashStruct := ruleHash{
+		EventType: r.EventType,
+		Window:    r.Window,
+		Count:     r.Count,
+		Condition: r.Condition,
+		Streak:    r.Streak,
+		Reward:    r.Reward,
+	}
+
+	hash, err := computeHash(hashStruct)
+	if err != nil {
+		return fmt.Errorf("failed to compute version hash: %w", err)
+	}
+
+	r.Version = hash
+	return nil
+}
+
+func computeHash(data any) (string, error) {
+	yamlData, err := yaml.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	hash := sha256.Sum256(yamlData)
+	return hex.EncodeToString(hash[:]), nil
 }
 
 func (c *Condition) UnmarshalYAML(unmarshal func(any) error) error {
@@ -66,4 +131,12 @@ func (tr *TimeRange) UnmarshalYAML(unmarshal func(any) error) error {
 	}
 
 	return nil
+}
+
+func (tr TimeRange) ToNanoseconds() int64 {
+	return time.Duration(tr).Nanoseconds()
+}
+
+func FromNanoseconds(ns int64) TimeRange {
+	return TimeRange(time.Duration(ns))
 }
