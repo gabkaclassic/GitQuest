@@ -14,7 +14,7 @@ CREATE TABLE users (
 CREATE INDEX idx_users_email ON users(email);
 
 CREATE TABLE rules (
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "version" VARCHAR(64) NOT NULL,
     "description" TEXT,
     "event_type" VARCHAR(100) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE rules (
     "count" INTEGER NOT NULL CHECK ("count" >= 0),
     "condition" VARCHAR(3) NOT NULL CHECK ("condition" IN ('>', '>=', '==', '<', '<=')),
     "streak" BOOLEAN NOT NULL DEFAULT false,
-    "reward" INTEGER NOT NULL CHECK ("reward" >= 0),
+    "reward" INTEGER NOT NULL,
     
     PRIMARY KEY ("name", "version")
 );
@@ -31,3 +31,19 @@ CREATE INDEX idx_rules_version ON rules("version");
 CREATE INDEX idx_rules_name ON rules("name");
 CREATE INDEX idx_rules_name_version ON rules("name", "version");
 ALTER TABLE rules ADD CONSTRAINT chk_window_max CHECK ("window" <= 2592000000000000);
+
+CREATE TABLE achievements (
+    "user" VARCHAR(64) NOT NULL,
+    "rule_name" VARCHAR(256) NOT NULL,
+    "rule_version" VARCHAR(64) NOT NULL,
+    "reward" INTEGER NOT NULL CHECK ("reward" >= 0),
+    "period_start" TIMESTAMP NOT NULL,
+    "period_end" TIMESTAMP NOT NULL,
+    
+    CHECK ("period_end" > "period_start"),
+    
+    FOREIGN KEY ("rule_name", "rule_version") REFERENCES rules("name", "version")
+);
+
+CREATE INDEX idx_achievements_period ON achievements("period_start", "period_end");
+CREATE INDEX idx_achievements_user_rule ON achievements("user", "rule_name", "rule_version");

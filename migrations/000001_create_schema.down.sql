@@ -1,6 +1,10 @@
 DROP TABLE IF EXISTS events;
 DROP INDEX IF EXISTS idx_events_timestamp_brin;
 
+DROP TABLE IF EXISTS achievements;
+DROP INDEX IF EXISTS idx_achievements_period;
+DROP INDEX IF EXISTS idx_achievements_user_rule;
+
 DROP TABLE IF EXISTS users;
 DROP INDEX IF EXISTS idx_users_email;
 
