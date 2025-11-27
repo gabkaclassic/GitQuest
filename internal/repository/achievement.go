@@ -35,14 +35,14 @@ func (repository *achievementRepository) SaveAll(achievements *[]dto.Achievement
 		}
 		defer tx.Rollback()
 
-		stmt, err := tx.Prepare(pq.CopyIn("achievements", "user_id", "rule", "reward"))
+		stmt, err := tx.Prepare(pq.CopyIn("achievements", "user", "rule_name", "rule_version", "reward", "period_start", "period_end"))
 
 		if err != nil {
 			return err
 		}
 
 		for _, achievement := range *achievements {
-			_, err = stmt.Exec(achievement.UserID, achievement.Rule, achievement.Reward)
+			_, err = stmt.Exec(achievement.User, achievement.RuleName, achievement.RuleVersion, achievement.Reward, achievement.StartRange, achievement.EndRange)
 			if err != nil {
 				return err
 			}
