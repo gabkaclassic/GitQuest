@@ -121,15 +121,21 @@ func (c *Condition) UnmarshalYAML(unmarshal func(any) error) error {
 }
 
 func (tr *TimeRange) UnmarshalYAML(unmarshal func(any) error) error {
-	var raw time.Duration
+	var raw string
 	if err := unmarshal(&raw); err != nil {
 		return err
 	}
 
-	if raw > MaxTimeRange {
-		return fmt.Errorf("time duration %v is more than maximum %v", raw, MaxTimeRange)
+	duration, err := time.ParseDuration(raw)
+	if err != nil {
+		return fmt.Errorf("invalid duration format '%s': %w", raw, err)
 	}
 
+	if duration > MaxTimeRange {
+		return fmt.Errorf("time duration %v is more than maximum %v", duration, MaxTimeRange)
+	}
+
+	*tr = TimeRange(duration)
 	return nil
 }
 
@@ -139,4 +145,21 @@ func (tr TimeRange) ToNanoseconds() int64 {
 
 func FromNanoseconds(ns int64) TimeRange {
 	return TimeRange(time.Duration(ns))
+}
+
+func (c *Condition) Compare(a, b int) bool {
+	switch *c {
+	case LT:
+		return a < b
+	case GT:
+		return a > b
+	case LTE:
+		return a <= b
+	case GTE:
+		return a >= b
+	case EQ:
+		return a == b
+	default:
+		return false
+	}
 }
