@@ -86,3 +86,11 @@ func ValidateEventType(value EventType) error {
 
 	return nil
 }
+
+func (e *Event) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, e)
+}
+
+func (e *Event) MarshalBinary() ([]byte, error) {
+	return json.Marshal(e)
+}
