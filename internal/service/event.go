@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log/slog"
 
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/dto"
@@ -15,38 +16,51 @@ type EventService interface {
 }
 
 type eventService struct {
-	repository repository.EventRepository
-	cache      cache.EventCacheClient
+	repository       repository.EventRepository
+	userCacheClient  cache.UserCacheClient
+	eventCacheClient cache.EventCacheClient
 }
 
-func NewEventService(repository repository.EventRepository, cache cache.EventCacheClient) (EventService, error) {
+func NewEventService(repository repository.EventRepository, eventCacheClient cache.EventCacheClient, userCacheClient cache.UserCacheClient) (EventService, error) {
 
 	if repository == nil {
 		return nil, errors.New("create new event service failed: repository is nil")
 	}
 
-	if cache == nil {
-		return nil, errors.New("create new event service failed: cache client is nil")
+	if eventCacheClient == nil {
+		return nil, errors.New("create new event service failed: event cache client is nil")
+	}
+
+	if userCacheClient == nil {
+		return nil, errors.New("create new event service failed: user cache client is nil")
 	}
 
 	return &eventService{
-		repository: repository,
-		cache:      cache,
+		repository:       repository,
+		eventCacheClient: eventCacheClient,
+		userCacheClient:  userCacheClient,
 	}, nil
 }
 
 func (service *eventService) SaveAll(ctx context.Context, events *[]dto.Event) *api.APIError {
 
-	err := service.cache.SaveNewEvents(ctx, events)
+	err := service.repository.SaveAll(events)
+
+	if err != nil {
+		return api.Internal("save events error", err)
+	}
+
+	users, err := service.eventCacheClient.SaveNewEvents(ctx, events)
 
 	if err != nil {
 		return api.Internal("cache operations error", err)
 	}
 
-	err = service.repository.SaveAll(events)
+	err = service.userCacheClient.SaveAll(ctx, users)
+	slog.Info("save all users", slog.Any("error", err), slog.Any("users", users))
 
 	if err != nil {
-		return api.Internal("save events error", err)
+		return api.Internal("cache operations error", err)
 	}
 
 	return nil
