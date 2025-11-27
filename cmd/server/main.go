@@ -13,9 +13,11 @@ import (
 	"time"
 
 	"github.com/gabkaclassic/metrics/pkg/httpserver"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/config"
+	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/gabkaclassic/GitQuest/internal/handler"
 	"github.com/gabkaclassic/GitQuest/internal/repository"
 	"github.com/gabkaclassic/GitQuest/internal/service"
@@ -61,15 +63,15 @@ func run() error {
 		return fmt.Errorf("failed to initialize cache storage: %w", err)
 	}
 
-	slog.Debug("Initialize cache client...")
-	cacheClient, err := cache.NewEventCacheClient(cacheStorage)
+	slog.Debug("Initialize cache clients...")
+	cacheClients, err := initializeCacheClients(cacheStorage)
 
 	if err != nil {
-		return fmt.Errorf("failed to initialize cache client: %w", err)
+		return fmt.Errorf("failed to initialize cache clients: %w", err)
 	}
 
 	slog.Debug("Initialize services...")
-	services, err := initializeServices(repositories, cacheClient)
+	services, err := initializeServices(repositories, cacheClients)
 
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
@@ -95,12 +97,38 @@ func run() error {
 	defer stop()
 
 	go server.Run(ctx, stop)
-	go startBackgroundJobs(ctx, cacheClient, cfg.Jobs)
+	go startBackgroundJobs(ctx, cacheClients.eventCacheClient, services.AchievementService, &cfg.Rules.Rules, cfg.Jobs)
 
 	<-ctx.Done()
 	slog.Info("Shutdown complete")
 
 	return nil
+}
+
+func initializeCacheClients(connection *redis.Client) (*cacheClientsList, error) {
+	eventCacheClient, err := cache.NewEventCacheClient(connection)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize event cache client: %w", err)
+	}
+
+	userCacheClient, err := cache.NewUserCacheClient(connection)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize user cache client: %w", err)
+	}
+
+	achievementCacheClient, err := cache.NewAchievementCacheClient(connection)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize achievement cache client: %w", err)
+	}
+
+	return &cacheClientsList{
+		eventCacheClient:       eventCacheClient,
+		userCacheClient:        userCacheClient,
+		achievementCacheClient: achievementCacheClient,
+	}, nil
 }
 
 func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
@@ -120,16 +148,26 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 		return nil, fmt.Errorf("failed to create rule repository: %w", err)
 	}
 
+	achievmentRepository, err := repository.NewAchievementRepository(connection)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create achievement repository: %w", err)
+	}
+
 	return &repositoriesList{
-		EventRepository: eventRepository,
-		UserRepository:  userRepository,
-		RuleRepository:  ruleRepository,
+		EventRepository:       eventRepository,
+		UserRepository:        userRepository,
+		RuleRepository:        ruleRepository,
+		AchievementRepository: achievmentRepository,
 	}, nil
 }
 
-func initializeServices(repositories *repositoriesList, cacheClient cache.EventCacheClient) (*servicesList, error) {
+func initializeServices(repositories *repositoriesList, cacheClients *cacheClientsList) (*servicesList, error) {
 
-	eventService, err := service.NewEventService(repositories.EventRepository, cacheClient)
+	eventService, err := service.NewEventService(
+		repositories.EventRepository,
+		cacheClients.eventCacheClient,
+		cacheClients.userCacheClient,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create event service: %w", err)
 	}
@@ -144,10 +182,20 @@ func initializeServices(repositories *repositoriesList, cacheClient cache.EventC
 		return nil, fmt.Errorf("failed to create rule service: %w", err)
 	}
 
+	achievementService, err := service.NewAchievementService(
+		repositories.AchievementRepository, repositories.UserRepository,
+		cacheClients.eventCacheClient, cacheClients.userCacheClient,
+		cacheClients.achievementCacheClient,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create achievement service: %w", err)
+	}
+
 	return &servicesList{
-		EventService: eventService,
-		UserService:  userService,
-		RuleService:  ruleService,
+		EventService:       eventService,
+		UserService:        userService,
+		RuleService:        ruleService,
+		AchievementService: achievementService,
 	}, nil
 }
 
@@ -164,9 +212,11 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 	}), nil
 }
 
-func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, cfg config.Jobs) {
+func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, achievementService service.AchievementService, rules *[]dto.Rule, cfg config.Jobs) {
 	cleanupTicker := time.NewTicker(cfg.Cleanup.Interval)
+	calculateTicker := time.NewTicker(cfg.Calculate.Interval)
 	defer cleanupTicker.Stop()
+	defer calculateTicker.Stop()
 
 	for {
 		select {
@@ -178,6 +228,14 @@ func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheC
 				slog.Error("Cleanup old events error", slog.Any("error", err))
 			}
 			slog.Info("Cleanup completed")
+		case <-calculateTicker.C:
+			ctx, cancel := context.WithTimeout(ctx, cfg.Calculate.Timeout)
+			defer cancel()
+			err := achievementService.CheckForNewAchievements(ctx, rules)
+			if err != nil {
+				slog.Error("Calculate new achievements error", slog.Any("error", err))
+			}
+			slog.Info("Calculate completed")
 		case <-ctx.Done():
 			slog.Info("Background jobs shutting down...")
 			return
@@ -185,14 +243,22 @@ func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheC
 	}
 }
 
-type repositoriesList struct {
-	EventRepository repository.EventRepository
-	UserRepository  repository.UserRepository
-	RuleRepository  repository.RuleRepository
-}
-
-type servicesList struct {
-	EventService service.EventService
-	UserService  service.UserService
-	RuleService  service.RuleService
-}
+type (
+	repositoriesList struct {
+		EventRepository       repository.EventRepository
+		UserRepository        repository.UserRepository
+		RuleRepository        repository.RuleRepository
+		AchievementRepository repository.AchievementRepository
+	}
+	servicesList struct {
+		EventService       service.EventService
+		UserService        service.UserService
+		RuleService        service.RuleService
+		AchievementService service.AchievementService
+	}
+	cacheClientsList struct {
+		userCacheClient        cache.UserCacheClient
+		eventCacheClient       cache.EventCacheClient
+		achievementCacheClient cache.AchievementCacheClient
+	}
+)
