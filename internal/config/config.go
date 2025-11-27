@@ -47,11 +47,16 @@ type (
 		Rules  []dto.Rule
 	}
 	Jobs struct {
-		Cleanup Cleanup
+		Cleanup   Cleanup
+		Calculate Calculate
 	}
 	Cleanup struct {
 		Timeout  time.Duration `env:"CLEANUP_TIMEOUT" envDefault:"10"`
 		Interval time.Duration `env:"CLEANUP_INTERVAL" envDefault:"10"`
+	}
+	Calculate struct {
+		Timeout  time.Duration `env:"CALCULATE_TIMEOUT" envDefault:"10"`
+		Interval time.Duration `env:"CALCULATE_INTERVAL" envDefault:"10"`
 	}
 )
 
@@ -112,6 +117,8 @@ func ParseConfig() (*Config, error) {
 
 	cleanupJobTimeout := flag.Duration("cleanup-timeout", cfg.Jobs.Cleanup.Timeout, "Cleanup old events background job timeout")
 	cleanupJobInterval := flag.Duration("cleanup-interval", cfg.Jobs.Cleanup.Interval, "Cleanup old events background job interval")
+	calculateJobTimeout := flag.Duration("calculate-timeout", cfg.Jobs.Calculate.Timeout, "Calculate new achievements background job timeout")
+	calculateJobInterval := flag.Duration("calculate-interval", cfg.Jobs.Calculate.Interval, "Calculate new achievements background job interval")
 
 	flag.Parse()
 
@@ -149,6 +156,10 @@ func ParseConfig() (*Config, error) {
 			cfg.Jobs.Cleanup.Timeout = *cleanupJobTimeout
 		case "cleanup-interval":
 			cfg.Jobs.Cleanup.Interval = *cleanupJobInterval
+		case "calculate-timeout":
+			cfg.Jobs.Calculate.Timeout = *calculateJobTimeout
+		case "calculate-interval":
+			cfg.Jobs.Calculate.Interval = *calculateJobInterval
 
 		}
 	})
