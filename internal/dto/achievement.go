@@ -1,7 +1,14 @@
 package dto
 
+import (
+	"time"
+)
+
 type Achievement struct {
-	UserID string
-	Rule   string
-	Reward int
+	User        string
+	RuleName    string
+	RuleVersion string
+	StartRange  time.Time
+	EndRange    time.Time
+	Reward      int
 }
