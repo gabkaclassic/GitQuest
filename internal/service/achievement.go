@@ -129,6 +129,7 @@ func (service *achievementService) processUserEvents(
 
 	for _, rule := range *rules {
 		startRange := now.Add(-time.Duration(rule.Window))
+
 		eventsTimestamps, err := service.eventCacheClient.GetUserEventsTimestampsByTypeAndRange(ctx, user, rule.EventType, startRange, now)
 		if err != nil {
 			slog.Error("Failed get users events from cache operation", slog.String("user", user), slog.Any("rule", rule), slog.Any("error", err))
@@ -155,12 +156,24 @@ func (service *achievementService) processUserEvents(
 		exists, err := service.achievementCacheClient.AchievementExists(ctx, &achievement)
 
 		if err != nil {
-			slog.Error("Failed check achievement exists", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", achievement), slog.Any("error", err))
+			slog.Error("Failed check achievement exists in cache", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", achievement), slog.Any("error", err))
 			continue
 		}
 
 		if exists {
 			continue
+		}
+
+		if achievement.StartRange.Equal(achievement.EndRange) {
+			exists, err = service.repository.ExistsInAllTime(&achievement)
+			if err != nil {
+				slog.Error("Failed check achievement exists in DB", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", achievement), slog.Any("error", err))
+				continue
+			}
+
+			if exists {
+				continue
+			}
 		}
 
 		out <- achievement

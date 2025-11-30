@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	// "log/slog"
 	"strconv"
 	"time"
 
@@ -88,14 +89,24 @@ func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events *[]dto
 func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx context.Context, user string, eventType dto.EventType, startRange, endRange time.Time) (*[]time.Time, error) {
 	var timestamps []time.Time
 
+	var minScore, maxScore string
+	if startRange.Equal(endRange) {
+		minScore = "-inf"
+		maxScore = "+inf"
+	} else {
+		minScore = strconv.FormatInt(startRange.Unix(), 10)
+		maxScore = strconv.FormatInt(endRange.Unix(), 10)
+	}
+
 	timestampStrs, err := client.storage.ZRangeByScore(
 		ctx,
 		fmt.Sprintf("%s:%s:%s", eventKeyPrefix, user, eventType),
 		&redis.ZRangeBy{
-			Min: strconv.FormatInt(startRange.Unix(), 10),
-			Max: strconv.FormatInt(endRange.Unix(), 10),
+			Min: minScore,
+			Max: maxScore,
 		},
 	).Result()
+	// slog.Debug("results", slog.Any("result", timestampStrs), slog.Any("error", err))
 	if err != nil {
 		return nil, err
 	}

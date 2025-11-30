@@ -40,7 +40,7 @@ CREATE TABLE achievements (
     "period_start" TIMESTAMP NOT NULL,
     "period_end" TIMESTAMP NOT NULL,
     
-    CHECK ("period_end" > "period_start"),
+    CHECK ("period_end" >= "period_start"),
     
     FOREIGN KEY ("rule_name", "rule_version") REFERENCES rules("name", "version")
 );

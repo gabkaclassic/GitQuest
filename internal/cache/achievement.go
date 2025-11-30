@@ -56,10 +56,20 @@ func (client *achievementCacheClient) AchievementExists(ctx context.Context, ach
 
 	key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
 
+	var minScore, maxScore string
+
+	if achievement.StartRange.Equal(achievement.EndRange) {
+		minScore = "-inf"
+		maxScore = "+inf"
+	} else {
+		minScore = strconv.FormatInt(achievement.StartRange.Unix(), 10)
+		maxScore = strconv.FormatInt(achievement.EndRange.Unix(), 10)
+	}
+
 	vals, err := client.storage.ZRangeByScoreWithScores(
 		ctx, key, &redis.ZRangeBy{
-			Min: strconv.FormatInt(achievement.StartRange.Unix(), 10),
-			Max: strconv.FormatInt(achievement.EndRange.Unix(), 10),
+			Min: minScore,
+			Max: maxScore,
 		},
 	).Result()
 

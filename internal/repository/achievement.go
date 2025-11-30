@@ -10,6 +10,7 @@ import (
 
 type AchievementRepository interface {
 	SaveAll(achievements *[]dto.Achievement) error
+	ExistsInAllTime(achievement *dto.Achievement) (bool, error)
 }
 
 type achievementRepository struct {
@@ -61,4 +62,15 @@ func (repository *achievementRepository) SaveAll(achievements *[]dto.Achievement
 
 		return tx.Commit()
 	})
+}
+
+func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achievement) (bool, error) {
+	var exists bool
+
+	err := repository.storage.QueryRow(
+		"SELECT EXISTS(SELECT 1 FROM achievements WHERE rule_name = $1 AND rule_version = $2 AND user = $3)",
+		achievement.RuleName, achievement.RuleVersion, achievement.User,
+	).Scan(&exists)
+
+	return exists, err
 }
