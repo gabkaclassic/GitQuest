@@ -13,6 +13,7 @@ import (
 
 type EventService interface {
 	SaveAll(ctx context.Context, events *[]dto.Event) *api.APIError
+	LoadUsersToCache(ctx context.Context) error
 }
 
 type eventService struct {
@@ -64,4 +65,16 @@ func (service *eventService) SaveAll(ctx context.Context, events *[]dto.Event) *
 	}
 
 	return nil
+}
+
+func (service *eventService) LoadUsersToCache(ctx context.Context) error {
+	users, err := service.repository.GetAllUsersWithEvents()
+
+	if err != nil {
+		return err
+	}
+
+	err = service.userCacheClient.SaveAll(ctx, users)
+
+	return err
 }

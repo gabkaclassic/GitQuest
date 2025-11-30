@@ -84,6 +84,14 @@ func run() error {
 		return fmt.Errorf("failed to save rules: %w", err)
 	}
 
+	slog.Debug("Load users to cache...")
+	ctx := context.Background()
+	err = services.EventService.LoadUsersToCache(ctx)
+
+	if err != nil {
+		return fmt.Errorf("failed load users to cache: %w", err)
+	}
+
 	router, err := setupRouter(services)
 	if err != nil {
 		return fmt.Errorf("failed to setup HTTP router: %w", err)

@@ -10,6 +10,7 @@ import (
 
 type EventRepository interface {
 	SaveAll(events *[]dto.Event) error
+	GetAllUsersWithEvents() (*[]string, error)
 }
 
 type eventRepository struct {
@@ -28,6 +29,7 @@ func NewEventRepository(storage *sql.DB) (EventRepository, error) {
 }
 
 func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
+
 	return executeWithRetry(func() error {
 		tx, err := repository.storage.Begin()
 		if err != nil {
@@ -61,4 +63,34 @@ func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
 
 		return tx.Commit()
 	})
+}
+
+func (repository *eventRepository) GetAllUsersWithEvents() (*[]string, error) {
+	users := make([]string, 0)
+	err := executeWithRetry(func() error {
+		rows, err := repository.storage.Query("SELECT actor DISTINCT FROM events")
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var user string
+			if err = rows.Scan(&user); err != nil {
+				return err
+			}
+			users = append(users, user)
+		}
+
+		if err = rows.Err(); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return &users, nil
 }
