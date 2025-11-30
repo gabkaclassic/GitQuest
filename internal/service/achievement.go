@@ -18,7 +18,8 @@ const (
 )
 
 type AchievementService interface {
-	CheckForNewAchievements(ctx context.Context, rules *[]dto.Rule) error
+	CheckForNewAchievements(context.Context, *[]dto.Rule) error
+	ReevalByDiffs(*[]dto.RuleDiff) error
 }
 
 type achievementService struct {
@@ -177,6 +178,42 @@ func (service *achievementService) processUserEvents(
 		}
 
 		out <- achievement
+	}
+
+	return nil
+}
+
+func (service *achievementService) ReevalByDiffs(diffs *[]dto.RuleDiff) error {
+
+	var wg sync.WaitGroup
+	errCh := make(chan error)
+
+	for _, diff := range *diffs {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errCh <- service.reevalByDiff(&diff)
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	for err := range errCh {
+		return err
+	}
+
+	return nil
+}
+
+func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
+	_, err := service.repository.ReevalByRuleDiff(diff)
+
+	if err != nil {
+		slog.Error("Error reeval by rule diff", slog.Any("diff", diff), slog.Any("error", err))
+		return err
 	}
 
 	return nil

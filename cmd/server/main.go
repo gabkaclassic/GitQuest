@@ -77,6 +77,25 @@ func run() error {
 		return fmt.Errorf("failed to initialize services: %w", err)
 	}
 
+	if cfg.Rules.Reeval {
+		slog.Debug("Reeval start...")
+		rulesDiffs, err := services.RuleService.GetRulesDiffs(&cfg.Rules.Rules)
+
+		if err != nil {
+			return fmt.Errorf("failed to get rules diffs: %w", err)
+		}
+
+		if rulesDiffs != nil && len(*rulesDiffs) > 0 {
+			err := services.AchievementService.ReevalByDiffs(rulesDiffs)
+
+			if err != nil {
+				return fmt.Errorf("failed to reeval: %w", err)
+			}
+		} else {
+			slog.Debug("Rules diffs list is empty, skip reeval")
+		}
+	}
+
 	slog.Debug("Save rules...")
 	err = services.RuleService.SaveAll(&cfg.Rules.Rules)
 

@@ -23,6 +23,12 @@ type (
 		Reward      int       `yaml:"reward"`
 		Version     string    `yaml:"-"`
 	}
+	RuleDiff struct {
+		Name       string
+		OldVersion string
+		NewVersion string
+		RewardDiff int
+	}
 	ruleHash struct {
 		EventType EventType `yaml:"event_type"`
 		Window    TimeRange `yaml:"window"`

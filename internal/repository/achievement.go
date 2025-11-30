@@ -9,8 +9,9 @@ import (
 )
 
 type AchievementRepository interface {
-	SaveAll(achievements *[]dto.Achievement) error
-	ExistsInAllTime(achievement *dto.Achievement) (bool, error)
+	SaveAll(*[]dto.Achievement) error
+	ExistsInAllTime(*dto.Achievement) (bool, error)
+	ReevalByRuleDiff(*dto.RuleDiff) (*[]string, error)
 }
 
 type achievementRepository struct {
@@ -73,4 +74,40 @@ func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achiev
 	).Scan(&exists)
 
 	return exists, err
+}
+
+func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) (*[]string, error) {
+	var users []string
+	err := executeWithRetry(func() error {
+		rows, err := repository.storage.Query(`
+			WITH updated_achievements AS (
+				UPDATE achievements 
+				SET reward = reward + $1,
+					rule_version = $2
+				WHERE rule_name = $3 AND rule_version = $4
+				RETURNING "user"
+			)
+			SELECT array_agg("user")
+			FROM updated_achievements;
+		`, diff.RewardDiff, diff.NewVersion, diff.Name, diff.OldVersion)
+
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			if err := rows.Scan(pq.Array(&users)); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &users, nil
 }

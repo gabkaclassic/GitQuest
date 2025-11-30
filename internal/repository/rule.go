@@ -10,6 +10,7 @@ import (
 type RuleRepository interface {
 	SaveAll(rules *[]dto.Rule) error
 	GetRule(name string, version string) (*dto.Rule, error)
+	GetLastRule(name string) (*dto.Rule, error)
 }
 
 type ruleRepository struct {
@@ -84,6 +85,37 @@ func (repository *ruleRepository) GetRule(name string, version string) (*dto.Rul
 
 	rule.Name = name
 	rule.Version = version
+	rule.Window = dto.FromNanoseconds(windowNs)
+	rule.Condition = dto.Condition(conditionStr)
+
+	return &rule, nil
+}
+
+func (repository *ruleRepository) GetLastRule(name string) (*dto.Rule, error) {
+
+	var rule dto.Rule
+	var windowNs int64
+	var conditionStr string
+
+	err := repository.storage.QueryRow(
+		`SELECT version, description, event_type, "window", count, condition, streak, reward FROM rules WHERE name = $1 ORDER BY "created_at" DESC LIMIT 1`,
+		name,
+	).Scan(
+		&rule.Version,
+		&rule.Description,
+		&rule.EventType,
+		&windowNs,
+		&rule.Count,
+		&conditionStr,
+		&rule.Streak,
+		&rule.Reward,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rule.Name = name
 	rule.Window = dto.FromNanoseconds(windowNs)
 	rule.Condition = dto.Condition(conditionStr)
 

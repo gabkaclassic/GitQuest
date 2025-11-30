@@ -16,6 +16,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE TABLE rules (
     "name" VARCHAR(256) NOT NULL,
     "version" VARCHAR(64) NOT NULL,
+    "created_at" TIMESTAMP DEFAULT NOW(),
     "description" TEXT,
     "event_type" VARCHAR(100) NOT NULL,
     "window" BIGINT NOT NULL CHECK ("window" >= 0),
@@ -40,9 +41,7 @@ CREATE TABLE achievements (
     "period_start" TIMESTAMP NOT NULL,
     "period_end" TIMESTAMP NOT NULL,
     
-    CHECK ("period_end" >= "period_start"),
-    
-    FOREIGN KEY ("rule_name", "rule_version") REFERENCES rules("name", "version")
+    CHECK ("period_end" >= "period_start")
 );
 
 CREATE INDEX idx_achievements_period ON achievements("period_start", "period_end");
