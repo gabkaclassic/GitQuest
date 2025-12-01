@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -23,6 +24,10 @@ type notificationService struct {
 }
 
 func NewNotificationService(cfg *config.Notification) (NotificationService, error) {
+
+	if cfg == nil {
+		return nil, errors.New("create notification service error: config cannot be nil")
+	}
 
 	client := httpclient.NewClient(httpclient.BaseURL(cfg.URL))
 
@@ -57,22 +62,15 @@ func (service *notificationService) Notify(notifications *[]dto.Notification) er
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		responseBody, err := io.ReadAll(resp.Body)
-
-		if err != nil {
-			slog.Error("Notifications send read response body error", slog.Any("error", err))
-			return err
-		}
-
-		slog.Error("Notifications send request error", slog.Int("status", resp.StatusCode), slog.String("body", string(responseBody)))
-	}
-
 	responseBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		slog.Error("Notifications send read response body error", slog.Any("error", err))
 		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		slog.Error("Notifications send request error", slog.Int("status", resp.StatusCode), slog.String("body", string(responseBody)))
 	}
 
 	slog.Info("Send notification completed successfully", slog.String("body", string(responseBody)))
