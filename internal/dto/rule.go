@@ -141,6 +141,10 @@ func (tr *TimeRange) UnmarshalYAML(unmarshal func(any) error) error {
 		return fmt.Errorf("time duration %v is more than maximum %v", duration, MaxTimeRange)
 	}
 
+	if duration < 0 {
+		return fmt.Errorf("time duration %v can't be negative", duration)
+	}
+
 	*tr = TimeRange(duration)
 	return nil
 }
