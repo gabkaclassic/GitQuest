@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	// "log/slog"
 	"strconv"
 	"time"
 
@@ -64,9 +63,14 @@ func (client *eventCacheClient) CleanupOldEventsFromCache(ctx context.Context) e
 }
 
 func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events *[]dto.Event) (*[]string, error) {
+
+	if events == nil {
+		return nil, errors.New("events cannot be nil")
+	}
+
 	usersSet := make(map[string]bool)
 	users := make([]string, 0)
-	pipeline := client.storage.Pipeline()
+	pipeline := client.storage.TxPipeline()
 	for _, event := range *events {
 		pipeline.ZAdd(
 			ctx, fmt.Sprintf("%s:%s:%s", eventKeyPrefix, event.Actor, event.EventType),
@@ -106,7 +110,6 @@ func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx contex
 			Max: maxScore,
 		},
 	).Result()
-	// slog.Debug("results", slog.Any("result", timestampStrs), slog.Any("error", err))
 	if err != nil {
 		return nil, err
 	}
