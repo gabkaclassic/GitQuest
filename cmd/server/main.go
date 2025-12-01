@@ -71,7 +71,7 @@ func run() error {
 	}
 
 	slog.Debug("Initialize services...")
-	services, err := initializeServices(repositories, cacheClients)
+	services, err := initializeServices(&cfg.Notification, repositories, cacheClients)
 
 	if err != nil {
 		return fmt.Errorf("failed to initialize services: %w", err)
@@ -188,7 +188,7 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 	}, nil
 }
 
-func initializeServices(repositories *repositoriesList, cacheClients *cacheClientsList) (*servicesList, error) {
+func initializeServices(cfg *config.Notification, repositories *repositoriesList, cacheClients *cacheClientsList) (*servicesList, error) {
 
 	eventService, err := service.NewEventService(
 		repositories.EventRepository,
@@ -209,10 +209,15 @@ func initializeServices(repositories *repositoriesList, cacheClients *cacheClien
 		return nil, fmt.Errorf("failed to create rule service: %w", err)
 	}
 
+	notificationService, err := service.NewNotificationService(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create notification service: %w", err)
+	}
+
 	achievementService, err := service.NewAchievementService(
 		repositories.AchievementRepository, repositories.UserRepository,
 		cacheClients.eventCacheClient, cacheClients.userCacheClient,
-		cacheClients.achievementCacheClient,
+		cacheClients.achievementCacheClient, notificationService,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create achievement service: %w", err)
@@ -278,10 +283,11 @@ type (
 		AchievementRepository repository.AchievementRepository
 	}
 	servicesList struct {
-		EventService       service.EventService
-		UserService        service.UserService
-		RuleService        service.RuleService
-		AchievementService service.AchievementService
+		EventService        service.EventService
+		UserService         service.UserService
+		RuleService         service.RuleService
+		AchievementService  service.AchievementService
+		NotificationService service.NotificationService
 	}
 	cacheClientsList struct {
 		userCacheClient        cache.UserCacheClient

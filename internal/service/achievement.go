@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
-	"sync"
-	"time"
-
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/gabkaclassic/GitQuest/internal/repository"
+	"github.com/google/uuid"
+	"log/slog"
+	"sync"
+	"time"
 )
 
 const (
@@ -28,6 +28,7 @@ type achievementService struct {
 	userCacheClient        cache.UserCacheClient
 	eventCacheClient       cache.EventCacheClient
 	achievementCacheClient cache.AchievementCacheClient
+	notificationService    NotificationService
 }
 
 func NewAchievementService(
@@ -36,6 +37,7 @@ func NewAchievementService(
 	eventCacheClient cache.EventCacheClient,
 	userCacheClient cache.UserCacheClient,
 	achievementCacheClient cache.AchievementCacheClient,
+	notificationService NotificationService,
 ) (AchievementService, error) {
 
 	if repository == nil {
@@ -58,12 +60,17 @@ func NewAchievementService(
 		return nil, errors.New("create new achievement service failed: achievement cache client is nil")
 	}
 
+	if notificationService == nil {
+		return nil, errors.New("create new achievement service failed: notifications service is nil")
+	}
+
 	return &achievementService{
 		repository:             repository,
 		userRepository:         userRepository,
 		eventCacheClient:       eventCacheClient,
 		userCacheClient:        userCacheClient,
 		achievementCacheClient: achievementCacheClient,
+		notificationService:    notificationService,
 	}, nil
 }
 
@@ -115,6 +122,27 @@ func (service *achievementService) CheckForNewAchievements(
 
 	if err := service.achievementCacheClient.SaveAll(ctx, &achievements); err != nil {
 		return fmt.Errorf("save new achievements to cache error %w", err)
+	}
+
+	notifications := make([]dto.Notification, len(achievements))
+
+	for ind, achievement := range achievements {
+		notificationID, err := uuid.NewUUID()
+
+		if err != nil {
+			return fmt.Errorf("generate new notification ID error: %w", err)
+		}
+
+		notifications[ind] = dto.Notification{
+			ID:       notificationID,
+			User:     achievement.User,
+			Reward:   achievement.Reward,
+			RuleName: achievement.RuleName,
+		}
+	}
+
+	if err := service.notificationService.Notify(&notifications); err != nil {
+		return fmt.Errorf("send notification error: %w", err)
 	}
 
 	return nil
@@ -209,10 +237,35 @@ func (service *achievementService) ReevalByDiffs(diffs *[]dto.RuleDiff) error {
 }
 
 func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
-	_, err := service.repository.ReevalByRuleDiff(diff)
+	users, err := service.repository.ReevalByRuleDiff(diff)
 
 	if err != nil {
 		slog.Error("Error reeval by rule diff", slog.Any("diff", diff), slog.Any("error", err))
+		return err
+	}
+
+	notifications := make([]dto.Notification, len(*users))
+
+	for ind, user := range *users {
+		notificationID, err := uuid.NewUUID()
+
+		if err != nil {
+			slog.Error("Generate new notification ID error", slog.Any("error", err))
+			return err
+		}
+
+		notifications[ind] = dto.Notification{
+			ID:       notificationID,
+			User:     user,
+			Reward:   diff.RewardDiff,
+			RuleName: diff.Name,
+		}
+	}
+
+	err = service.notificationService.Notify(&notifications)
+
+	if err != nil {
+		slog.Error("Send notification error", slog.Any("error", err))
 		return err
 	}
 
