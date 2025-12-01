@@ -90,6 +90,11 @@ func TestEventType_UnmarshalYAML(t *testing.T) {
 			input:       "RANDOM_EVENT",
 			expectError: true,
 		},
+		{
+			name:        "empty string",
+			input:       `""`,
+			expectError: true,
+		},
 	}
 
 	for _, tt := range tests {
