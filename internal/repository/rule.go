@@ -29,6 +29,11 @@ func NewRuleRepository(storage *sql.DB) (RuleRepository, error) {
 }
 
 func (repository *ruleRepository) SaveAll(rules *[]dto.Rule) error {
+
+	if rules == nil {
+		return errors.New("rules cannot be nil")
+	}
+
 	return executeWithRetry(func() error {
 		tx, err := repository.storage.Begin()
 		if err != nil {
