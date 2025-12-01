@@ -31,13 +31,21 @@ func NewUserRepository(storage *sql.DB) (UserRepository, error) {
 
 func (repository *userRepository) Save(user *dto.User) (*uuid.UUID, error) {
 
+	if user == nil {
+		return nil, errors.New("user cannot be nil")
+	}
+
 	createdUserID := uuid.UUID{}
 	err := repository.storage.QueryRow(
 		"INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id",
 		user.Email, user.Password,
 	).Scan(&createdUserID)
 
-	return &createdUserID, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &createdUserID, nil
 }
 
 func (repository *userRepository) ExistsByEmail(email string) (bool, error) {
