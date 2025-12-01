@@ -36,7 +36,11 @@ func NewUserCacheClient(storage *redis.Client) (UserCacheClient, error) {
 
 func (client *userCacheClient) SaveAll(ctx context.Context, users *[]string) error {
 
-	pipeline := client.storage.Pipeline()
+	if users == nil {
+		return errors.New("users cannot be nil")
+	}
+
+	pipeline := client.storage.TxPipeline()
 
 	for _, user := range *users {
 		key := fmt.Sprintf("%s:%s", userKeyPrefix, user)
@@ -63,7 +67,7 @@ func (client *userCacheClient) GetAll(ctx context.Context) (*[]string, error) {
 
 	keys, err := client.storage.Keys(ctx, allUsersKey).Result()
 	if err != nil {
-		return &users, err
+		return nil, err
 	}
 
 	if len(keys) == 0 {
@@ -72,7 +76,7 @@ func (client *userCacheClient) GetAll(ctx context.Context) (*[]string, error) {
 
 	values, err := client.storage.MGet(ctx, keys...).Result()
 	if err != nil {
-		return &users, err
+		return nil, err
 	}
 
 	for _, value := range values {
