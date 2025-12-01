@@ -66,6 +66,11 @@ func (repository *achievementRepository) SaveAll(achievements *[]dto.Achievement
 }
 
 func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achievement) (bool, error) {
+
+	if achievement == nil {
+		return false, errors.New("achievement cannot be nil")
+	}
+
 	var exists bool
 
 	err := repository.storage.QueryRow(
@@ -77,6 +82,11 @@ func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achiev
 }
 
 func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) (*[]string, error) {
+
+	if diff == nil {
+		return nil, errors.New("diff cannot be nil")
+	}
+
 	var users []string
 	err := executeWithRetry(func() error {
 		rows, err := repository.storage.Query(`
