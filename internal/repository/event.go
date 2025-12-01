@@ -30,6 +30,10 @@ func NewEventRepository(storage *sql.DB) (EventRepository, error) {
 
 func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
 
+	if events == nil {
+		return errors.New("events cannot be nil")
+	}
+
 	return executeWithRetry(func() error {
 		tx, err := repository.storage.Begin()
 		if err != nil {
