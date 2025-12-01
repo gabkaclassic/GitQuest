@@ -1,0 +1,32 @@
+all: false
+dir: '{{.InterfaceDir}}'
+filename: mocks.gen.go
+force-file-write: true
+formatter: goimports
+include-auto-generated: false
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/gabkaclassic/GitQuest/internal/dto:
+    config:
+      all: true
+  github.com/gabkaclassic/GitQuest/internal/repository:
+    config:
+      all: true
+  github.com/gabkaclassic/GitQuest/internal/service:
+    config:
+      all: true
+  github.com/gabkaclassic/GitQuest/internal/cache:
+    config:
+      all: true
+  github.com/gabkaclassic/GitQuest/internal/storage:
+    config:
+      all: true
+  github.com/gabkaclassic/GitQuest/internal/handler:
+    config:
+      all: true
