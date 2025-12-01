@@ -57,7 +57,7 @@ func (e *EventType) UnmarshalYAML(unmarshal func(any) error) error {
 	evt := EventType(strings.ToUpper(raw))
 
 	if err := ValidateEventType(evt); err != nil {
-		return fmt.Errorf("invalid event type: %s", raw)
+		return err
 	}
 
 	*e = evt
@@ -70,7 +70,7 @@ func (et *EventType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	eventType := EventType(s)
+	eventType := EventType(strings.ToUpper(s))
 	if err := ValidateEventType(eventType); err != nil {
 		return err
 	}
