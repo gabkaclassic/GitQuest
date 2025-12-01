@@ -15,12 +15,13 @@ import (
 
 type (
 	Config struct {
-		Server Server
-		Log    Log
-		DB     DB
-		Rules  Rules
-		Cache  Cache
-		Jobs   Jobs
+		Server       Server
+		Log          Log
+		DB           DB
+		Rules        Rules
+		Cache        Cache
+		Jobs         Jobs
+		Notification Notification
 	}
 	Server struct {
 		Address string `env:"ADDRESS" envDefault:"localhost:8080"`
@@ -57,6 +58,11 @@ type (
 	Calculate struct {
 		Timeout  time.Duration `env:"CALCULATE_TIMEOUT" envDefault:"10"`
 		Interval time.Duration `env:"CALCULATE_INTERVAL" envDefault:"10"`
+	}
+	Notification struct {
+		URL         string `env:"NOTIFICATION_URL"`
+		Header      string `env:"NOTIFICATION_HEADER" envDefault:"Authorization"`
+		HeaderValue string `env:"NOTIFICATION_HEADER_VALUE"`
 	}
 )
 
@@ -120,6 +126,10 @@ func ParseConfig() (*Config, error) {
 	calculateJobTimeout := flag.Duration("calculate-timeout", cfg.Jobs.Calculate.Timeout, "Calculate new achievements background job timeout")
 	calculateJobInterval := flag.Duration("calculate-interval", cfg.Jobs.Calculate.Interval, "Calculate new achievements background job interval")
 
+	notificationURL := flag.String("notification-url", cfg.Notification.URL, "User achievements notifications URL")
+	notificationHeader := flag.String("notification-header", cfg.Notification.Header, "User achievements notifications header")
+	notificationHeaderValue := flag.String("notification-header-val", cfg.Notification.URL, "User achievements notifications header value")
+
 	flag.Parse()
 
 	flag.Visit(func(f *flag.Flag) {
@@ -161,6 +171,12 @@ func ParseConfig() (*Config, error) {
 		case "calculate-interval":
 			cfg.Jobs.Calculate.Interval = *calculateJobInterval
 
+		case "notification-url":
+			cfg.Notification.URL = *notificationURL
+		case "notification-header":
+			cfg.Notification.Header = *notificationHeader
+		case "notification-header-val":
+			cfg.Notification.HeaderValue = *notificationHeaderValue
 		}
 	})
 
