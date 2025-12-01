@@ -36,7 +36,11 @@ func NewAchievementCacheClient(storage *redis.Client) (AchievementCacheClient, e
 
 func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements *[]dto.Achievement) error {
 
-	pipeline := client.storage.Pipeline()
+	if achievements == nil {
+		return errors.New("achievements cannot be nil")
+	}
+
+	pipeline := client.storage.TxPipeline()
 
 	for _, achievement := range *achievements {
 		key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
@@ -53,6 +57,10 @@ func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements 
 }
 
 func (client *achievementCacheClient) AchievementExists(ctx context.Context, achievement *dto.Achievement) (bool, error) {
+
+	if achievement == nil {
+		return false, errors.New("achievement cannot be nil")
+	}
 
 	key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
 
