@@ -244,7 +244,9 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 	}), nil
 }
 
-func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, achievementService service.AchievementService, rules []dto.Rule, cfg config.Jobs) {
+func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient,
+	achievementService service.AchievementService, rules []dto.Rule, cfg config.Jobs) {
+
 	cleanupTicker := time.NewTicker(cfg.Cleanup.Interval)
 	calculateTicker := time.NewTicker(cfg.Calculate.Interval)
 	defer cleanupTicker.Stop()
@@ -253,26 +255,40 @@ func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheC
 	for {
 		select {
 		case <-cleanupTicker.C:
-			ctx, cancel := context.WithTimeout(ctx, cfg.Cleanup.Timeout)
-			defer cancel()
-			err := eventCacheClient.CleanupOldEventsFromCache(ctx)
-			if err != nil {
-				slog.Error("Cleanup old events error", slog.Any("error", err))
-			}
-			slog.Info("Cleanup completed")
+			runCleanup(ctx, eventCacheClient, cfg)
+
 		case <-calculateTicker.C:
-			ctx, cancel := context.WithTimeout(ctx, cfg.Calculate.Timeout)
-			defer cancel()
-			err := achievementService.CheckForNewAchievements(ctx, rules)
-			if err != nil {
-				slog.Error("Calculate new achievements error", slog.Any("error", err))
-			}
-			slog.Info("Calculate completed")
+			runCalculation(ctx, achievementService, rules, cfg)
+
 		case <-ctx.Done():
 			slog.Info("Background jobs shutting down...")
 			return
 		}
 	}
+}
+
+func runCleanup(ctx context.Context, client cache.EventCacheClient, cfg config.Jobs) {
+	cleanupCtx, cancel := context.WithTimeout(ctx, cfg.Cleanup.Timeout)
+	defer cancel()
+
+	err := client.CleanupOldEventsFromCache(cleanupCtx)
+	if err != nil {
+		slog.Error("Cleanup old events error", slog.Any("error", err))
+	}
+	slog.Info("Cleanup completed")
+}
+
+func runCalculation(ctx context.Context, service service.AchievementService,
+	rules []dto.Rule, cfg config.Jobs) {
+
+	calculationCtx, cancel := context.WithTimeout(ctx, cfg.Calculate.Timeout)
+	defer cancel()
+
+	err := service.CheckForNewAchievements(calculationCtx, rules)
+	if err != nil {
+		slog.Error("Calculate new achievements error", slog.Any("error", err))
+	}
+	slog.Info("Calculate completed")
 }
 
 type (
