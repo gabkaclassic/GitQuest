@@ -71,7 +71,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]dto.Achievement
+		input       []dto.Achievement
 		expectError bool
 	}{
 		{
@@ -87,7 +87,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectCommit()
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{
 					User:        "user1",
 					RuleName:    "rule1",
@@ -104,7 +104,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 			mockFn: func() {
 				mock.ExpectBegin().WillReturnError(errors.New("fail"))
 			},
-			input:       &[]dto.Achievement{},
+			input:       []dto.Achievement{},
 			expectError: true,
 		},
 		{
@@ -115,7 +115,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 					WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input:       &[]dto.Achievement{},
+			input:       []dto.Achievement{},
 			expectError: true,
 		},
 		{
@@ -130,7 +130,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{
 					User:        "user1",
 					RuleName:    "rule1",
@@ -155,7 +155,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{
 					User:        "user1",
 					RuleName:    "rule1",
@@ -181,7 +181,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{
 					User:        "user1",
 					RuleName:    "rule1",
@@ -206,7 +206,7 @@ func TestAchievementRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectCommit().WillReturnError(errors.New("fail"))
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{
 					User:        "user1",
 					RuleName:    "rule1",
@@ -706,10 +706,9 @@ func TestAchievementRepository_ReevalByRuleDiff(t *testing.T) {
 				assert.NoError(t, err)
 				if tt.expectedUsers == nil {
 					assert.Empty(t, users)
-					// assert.Nil(t, users)
 				} else {
 					assert.NotNil(t, users)
-					assert.Equal(t, tt.expectedUsers, *users)
+					assert.Equal(t, tt.expectedUsers, users)
 				}
 			}
 

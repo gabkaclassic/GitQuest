@@ -226,7 +226,7 @@ func TestNotificationService_Notify(t *testing.T) {
 			}
 
 			input := notifications
-			err := svc.Notify(&input)
+			err := svc.Notify(input)
 
 			if tt.expectErr {
 				assert.Error(t, err)

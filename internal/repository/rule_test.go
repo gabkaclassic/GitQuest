@@ -69,7 +69,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]dto.Rule
+		input       []dto.Rule
 		expectError bool
 	}{
 		{
@@ -85,7 +85,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				mock.ExpectCommit()
 			},
-			input: &[]dto.Rule{
+			input: []dto.Rule{
 				{
 					Name:        "rule1",
 					Description: "desc1",
@@ -111,7 +111,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 			mockFn: func() {
 				mock.ExpectBegin().WillReturnError(errors.New("fail"))
 			},
-			input:       &[]dto.Rule{},
+			input:       []dto.Rule{},
 			expectError: true,
 		},
 		{
@@ -121,7 +121,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 				mock.ExpectPrepare("INSERT INTO rules .*").WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input:       &[]dto.Rule{},
+			input:       []dto.Rule{},
 			expectError: true,
 		},
 		{
@@ -137,7 +137,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 					WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Rule{
+			input: []dto.Rule{
 				{
 					Name:        "rule1",
 					Description: "desc1",
@@ -165,7 +165,7 @@ func TestRuleRepository_SaveAll(t *testing.T) {
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				mock.ExpectCommit().WillReturnError(errors.New("fail"))
 			},
-			input: &[]dto.Rule{
+			input: []dto.Rule{
 				{
 					Name:        "rule1",
 					Description: "desc1",

@@ -58,7 +58,7 @@ func TestRuleService_SaveAll(t *testing.T) {
 	repo := new(repository.MockRuleRepository)
 	service := &ruleService{repository: repo}
 
-	rules := &[]dto.Rule{{}}
+	rules := []dto.Rule{{}}
 
 	t.Run("repo error", func(t *testing.T) {
 		repo.ExpectedCalls = nil
@@ -96,7 +96,7 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 		name      string
 		setup     func(m mocks)
 		rules     []dto.Rule
-		expect    *[]dto.RuleDiff
+		expect    []dto.RuleDiff
 		expectErr string
 	}{
 		{
@@ -114,7 +114,7 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 				m.repo.On("GetLastRule", "r1").Return(lastR1, nil)
 			},
 			rules: []dto.Rule{r1},
-			expect: &[]dto.RuleDiff{
+			expect: []dto.RuleDiff{
 				{
 					Name:       "r1",
 					OldVersion: "1",
@@ -133,7 +133,7 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 				}, nil)
 			},
 			rules:  []dto.Rule{r2},
-			expect: &[]dto.RuleDiff{},
+			expect: []dto.RuleDiff{},
 		},
 		{
 			name: "version same ignore",
@@ -145,7 +145,7 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 				}, nil)
 			},
 			rules:  []dto.Rule{r1},
-			expect: &[]dto.RuleDiff{},
+			expect: []dto.RuleDiff{},
 		},
 	}
 
@@ -161,7 +161,7 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 				repository: mockObjs.repo,
 			}
 
-			out, err := service.GetRulesDiffs(&tt.rules)
+			out, err := service.GetRulesDiffs(tt.rules)
 
 			if tt.expectErr == "" {
 				assert.NoError(t, err)

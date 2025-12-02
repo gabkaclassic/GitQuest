@@ -174,8 +174,8 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]dto.Event
-		expected    *[]string
+		input       []dto.Event
+		expected    []string
 		expectError bool
 	}{
 		{
@@ -196,12 +196,12 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 				{Actor: "user1", EventType: "IssueEvent", Timestamp: time.Unix(200, 0)},
 				{Actor: "user2", EventType: "PushEvent", Timestamp: time.Unix(300, 0)},
 			},
-			expected:    &[]string{"user1", "user2"},
+			expected:    []string{"user1", "user2"},
 			expectError: false,
 		},
 		{
@@ -214,10 +214,10 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 			},
-			expected:    &[]string{"user1"},
+			expected:    []string{"user1"},
 			expectError: false,
 		},
 		{
@@ -230,10 +230,10 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec().SetErr(errors.New("pipeline error"))
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 			},
-			expected:    &[]string{"user1"},
+			expected:    []string{"user1"},
 			expectError: true,
 		},
 		{
@@ -246,8 +246,8 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 		{
 			name:        "empty events",
 			mockFn:      func() {},
-			input:       &[]dto.Event{},
-			expected:    &[]string{},
+			input:       []dto.Event{},
+			expected:    []string{},
 			expectError: false,
 		},
 		{
@@ -268,12 +268,12 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 				{Actor: "user1", EventType: "IssueEvent", Timestamp: time.Unix(200, 0)},
 				{Actor: "user1", EventType: "PullRequestEvent", Timestamp: time.Unix(300, 0)},
 			},
-			expected:    &[]string{"user1"},
+			expected:    []string{"user1"},
 			expectError: false,
 		},
 		{
@@ -290,11 +290,11 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(200, 0)},
 			},
-			expected:    &[]string{"user1"},
+			expected:    []string{"user1"},
 			expectError: false,
 		},
 	}
@@ -328,7 +328,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		eventType   dto.EventType
 		startRange  time.Time
 		endRange    time.Time
-		expected    *[]time.Time
+		expected    []time.Time
 		expectError bool
 	}{
 		{
@@ -343,7 +343,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			eventType:  "PushEvent",
 			startRange: time.Unix(100, 0),
 			endRange:   time.Unix(200, 0),
-			expected: &[]time.Time{
+			expected: []time.Time{
 				time.Unix(100, 0),
 				time.Unix(150, 0),
 				time.Unix(200, 0),
@@ -362,7 +362,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			eventType:  "IssueEvent",
 			startRange: time.Unix(500, 0),
 			endRange:   time.Unix(500, 0),
-			expected: &[]time.Time{
+			expected: []time.Time{
 				time.Unix(300, 0),
 				time.Unix(400, 0),
 			},
@@ -425,7 +425,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			eventType:  "PushEvent",
 			startRange: time.Unix(500, 0),
 			endRange:   time.Unix(600, 0),
-			expected: &[]time.Time{
+			expected: []time.Time{
 				time.Unix(550, 0),
 			},
 			expectError: false,
@@ -442,7 +442,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			eventType:  "IssueEvent",
 			startRange: time.Unix(10, 0),
 			endRange:   time.Unix(10, 0),
-			expected: &[]time.Time{
+			expected: []time.Time{
 				time.Unix(1, 0),
 				time.Unix(2, 0),
 				time.Unix(3, 0),
@@ -461,7 +461,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			eventType:  "PullRequestEvent",
 			startRange: time.Unix(0, 0),
 			endRange:   time.Unix(0, 0),
-			expected: &[]time.Time{
+			expected: []time.Time{
 				time.Unix(100, 0),
 				time.Unix(200, 0),
 			},

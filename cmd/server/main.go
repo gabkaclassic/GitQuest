@@ -79,13 +79,13 @@ func run() error {
 
 	if cfg.Rules.Reeval {
 		slog.Debug("Reeval start...")
-		rulesDiffs, err := services.RuleService.GetRulesDiffs(&cfg.Rules.Rules)
+		rulesDiffs, err := services.RuleService.GetRulesDiffs(cfg.Rules.Rules)
 
 		if err != nil {
 			return fmt.Errorf("failed to get rules diffs: %w", err)
 		}
 
-		if rulesDiffs != nil && len(*rulesDiffs) > 0 {
+		if rulesDiffs != nil && len(rulesDiffs) > 0 {
 			err := services.AchievementService.ReevalByDiffs(rulesDiffs)
 
 			if err != nil {
@@ -97,7 +97,7 @@ func run() error {
 	}
 
 	slog.Debug("Save rules...")
-	err = services.RuleService.SaveAll(&cfg.Rules.Rules)
+	err = services.RuleService.SaveAll(cfg.Rules.Rules)
 
 	if err != nil {
 		return fmt.Errorf("failed to save rules: %w", err)
@@ -124,7 +124,7 @@ func run() error {
 	defer stop()
 
 	go server.Run(ctx, stop)
-	go startBackgroundJobs(ctx, cacheClients.eventCacheClient, services.AchievementService, &cfg.Rules.Rules, cfg.Jobs)
+	go startBackgroundJobs(ctx, cacheClients.eventCacheClient, services.AchievementService, cfg.Rules.Rules, cfg.Jobs)
 
 	<-ctx.Done()
 	slog.Info("Shutdown complete")
@@ -244,7 +244,7 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 	}), nil
 }
 
-func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, achievementService service.AchievementService, rules *[]dto.Rule, cfg config.Jobs) {
+func startBackgroundJobs(ctx context.Context, eventCacheClient cache.EventCacheClient, achievementService service.AchievementService, rules []dto.Rule, cfg config.Jobs) {
 	cleanupTicker := time.NewTicker(cfg.Cleanup.Interval)
 	calculateTicker := time.NewTicker(cfg.Calculate.Interval)
 	defer cleanupTicker.Stop()

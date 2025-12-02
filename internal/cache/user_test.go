@@ -69,7 +69,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]string
+		input       []string
 		expectError bool
 	}{
 		{
@@ -81,7 +81,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 				mock.ExpectSet("user:user3", "user3", 0).SetVal("OK")
 				mock.ExpectTxPipelineExec()
 			},
-			input:       &[]string{"user1", "user2", "user3"},
+			input:       []string{"user1", "user2", "user3"},
 			expectError: false,
 		},
 		{
@@ -91,7 +91,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 				mock.ExpectSet("user:testuser", "testuser", 0).SetVal("OK")
 				mock.ExpectTxPipelineExec()
 			},
-			input:       &[]string{"testuser"},
+			input:       []string{"testuser"},
 			expectError: false,
 		},
 		{
@@ -101,7 +101,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
 				mock.ExpectTxPipelineExec().SetErr(errors.New("pipeline error"))
 			},
-			input:       &[]string{"user1"},
+			input:       []string{"user1"},
 			expectError: true,
 		},
 		{
@@ -113,7 +113,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 		{
 			name:        "empty users",
 			mockFn:      func() {},
-			input:       &[]string{},
+			input:       []string{},
 			expectError: false,
 		},
 		{
@@ -124,7 +124,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
 				mock.ExpectTxPipelineExec()
 			},
-			input:       &[]string{"user1", "user1"},
+			input:       []string{"user1", "user1"},
 			expectError: false,
 		},
 		{
@@ -133,7 +133,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectSet("user:user1", "user1", 0).SetErr(errors.New("set error"))
 			},
-			input:       &[]string{"user1"},
+			input:       []string{"user1"},
 			expectError: true,
 		},
 	}
@@ -215,7 +215,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		expected    *[]string
+		expected    []string
 		expectError bool
 	}{
 		{
@@ -224,7 +224,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2", "user:user3"})
 				mock.ExpectMGet("user:user1", "user:user2", "user:user3").SetVal([]any{"user1", "user2", "user3"})
 			},
-			expected:    &[]string{"user1", "user2", "user3"},
+			expected:    []string{"user1", "user2", "user3"},
 			expectError: false,
 		},
 		{
@@ -233,7 +233,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:testuser"})
 				mock.ExpectMGet("user:testuser").SetVal([]any{"testuser"})
 			},
-			expected:    &[]string{"testuser"},
+			expected:    []string{"testuser"},
 			expectError: false,
 		},
 		{
@@ -267,7 +267,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2", "user:user3"})
 				mock.ExpectMGet("user:user1", "user:user2", "user:user3").SetVal([]any{"user1", nil, "user3"})
 			},
-			expected:    &[]string{"user1", "user3"},
+			expected:    []string{"user1", "user3"},
 			expectError: false,
 		},
 		{
@@ -276,7 +276,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2"})
 				mock.ExpectMGet("user:user1", "user:user2").SetVal([]any{123, "user2"})
 			},
-			expected:    &[]string{"user2"},
+			expected:    []string{"user2"},
 			expectError: false,
 		},
 		{

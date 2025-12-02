@@ -106,7 +106,7 @@ func (_c *MockAchievementCacheClient_AchievementExists_Call) RunAndReturn(run fu
 }
 
 // SaveAll provides a mock function for the type MockAchievementCacheClient
-func (_mock *MockAchievementCacheClient) SaveAll(context1 context.Context, achievements *[]dto.Achievement) error {
+func (_mock *MockAchievementCacheClient) SaveAll(context1 context.Context, achievements []dto.Achievement) error {
 	ret := _mock.Called(context1, achievements)
 
 	if len(ret) == 0 {
@@ -114,7 +114,7 @@ func (_mock *MockAchievementCacheClient) SaveAll(context1 context.Context, achie
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]dto.Achievement) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Achievement) error); ok {
 		r0 = returnFunc(context1, achievements)
 	} else {
 		r0 = ret.Error(0)
@@ -129,20 +129,20 @@ type MockAchievementCacheClient_SaveAll_Call struct {
 
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
-//   - achievements *[]dto.Achievement
+//   - achievements []dto.Achievement
 func (_e *MockAchievementCacheClient_Expecter) SaveAll(context1 interface{}, achievements interface{}) *MockAchievementCacheClient_SaveAll_Call {
 	return &MockAchievementCacheClient_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, achievements)}
 }
 
-func (_c *MockAchievementCacheClient_SaveAll_Call) Run(run func(context1 context.Context, achievements *[]dto.Achievement)) *MockAchievementCacheClient_SaveAll_Call {
+func (_c *MockAchievementCacheClient_SaveAll_Call) Run(run func(context1 context.Context, achievements []dto.Achievement)) *MockAchievementCacheClient_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *[]dto.Achievement
+		var arg1 []dto.Achievement
 		if args[1] != nil {
-			arg1 = args[1].(*[]dto.Achievement)
+			arg1 = args[1].([]dto.Achievement)
 		}
 		run(
 			arg0,
@@ -157,7 +157,7 @@ func (_c *MockAchievementCacheClient_SaveAll_Call) Return(err error) *MockAchiev
 	return _c
 }
 
-func (_c *MockAchievementCacheClient_SaveAll_Call) RunAndReturn(run func(context1 context.Context, achievements *[]dto.Achievement) error) *MockAchievementCacheClient_SaveAll_Call {
+func (_c *MockAchievementCacheClient_SaveAll_Call) RunAndReturn(run func(context1 context.Context, achievements []dto.Achievement) error) *MockAchievementCacheClient_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -241,23 +241,23 @@ func (_c *MockEventCacheClient_CleanupOldEventsFromCache_Call) RunAndReturn(run 
 }
 
 // GetUserEventsTimestampsByTypeAndRange provides a mock function for the type MockEventCacheClient
-func (_mock *MockEventCacheClient) GetUserEventsTimestampsByTypeAndRange(context1 context.Context, s string, eventType dto.EventType, time1 time.Time, time11 time.Time) (*[]time.Time, error) {
+func (_mock *MockEventCacheClient) GetUserEventsTimestampsByTypeAndRange(context1 context.Context, s string, eventType dto.EventType, time1 time.Time, time11 time.Time) ([]time.Time, error) {
 	ret := _mock.Called(context1, s, eventType, time1, time11)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserEventsTimestampsByTypeAndRange")
 	}
 
-	var r0 *[]time.Time
+	var r0 []time.Time
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType, time.Time, time.Time) (*[]time.Time, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType, time.Time, time.Time) ([]time.Time, error)); ok {
 		return returnFunc(context1, s, eventType, time1, time11)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType, time.Time, time.Time) *[]time.Time); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType, time.Time, time.Time) []time.Time); ok {
 		r0 = returnFunc(context1, s, eventType, time1, time11)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]time.Time)
+			r0 = ret.Get(0).([]time.Time)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, dto.EventType, time.Time, time.Time) error); ok {
@@ -316,37 +316,37 @@ func (_c *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call) Run(r
 	return _c
 }
 
-func (_c *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call) Return(times *[]time.Time, err error) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
+func (_c *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call) Return(times []time.Time, err error) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
 	_c.Call.Return(times, err)
 	return _c
 }
 
-func (_c *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call) RunAndReturn(run func(context1 context.Context, s string, eventType dto.EventType, time1 time.Time, time11 time.Time) (*[]time.Time, error)) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
+func (_c *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call) RunAndReturn(run func(context1 context.Context, s string, eventType dto.EventType, time1 time.Time, time11 time.Time) ([]time.Time, error)) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveNewEvents provides a mock function for the type MockEventCacheClient
-func (_mock *MockEventCacheClient) SaveNewEvents(context1 context.Context, events *[]dto.Event) (*[]string, error) {
+func (_mock *MockEventCacheClient) SaveNewEvents(context1 context.Context, events []dto.Event) ([]string, error) {
 	ret := _mock.Called(context1, events)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveNewEvents")
 	}
 
-	var r0 *[]string
+	var r0 []string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]dto.Event) (*[]string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Event) ([]string, error)); ok {
 		return returnFunc(context1, events)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]dto.Event) *[]string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Event) []string); ok {
 		r0 = returnFunc(context1, events)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]string)
+			r0 = ret.Get(0).([]string)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *[]dto.Event) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []dto.Event) error); ok {
 		r1 = returnFunc(context1, events)
 	} else {
 		r1 = ret.Error(1)
@@ -361,20 +361,20 @@ type MockEventCacheClient_SaveNewEvents_Call struct {
 
 // SaveNewEvents is a helper method to define mock.On call
 //   - context1 context.Context
-//   - events *[]dto.Event
+//   - events []dto.Event
 func (_e *MockEventCacheClient_Expecter) SaveNewEvents(context1 interface{}, events interface{}) *MockEventCacheClient_SaveNewEvents_Call {
 	return &MockEventCacheClient_SaveNewEvents_Call{Call: _e.mock.On("SaveNewEvents", context1, events)}
 }
 
-func (_c *MockEventCacheClient_SaveNewEvents_Call) Run(run func(context1 context.Context, events *[]dto.Event)) *MockEventCacheClient_SaveNewEvents_Call {
+func (_c *MockEventCacheClient_SaveNewEvents_Call) Run(run func(context1 context.Context, events []dto.Event)) *MockEventCacheClient_SaveNewEvents_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *[]dto.Event
+		var arg1 []dto.Event
 		if args[1] != nil {
-			arg1 = args[1].(*[]dto.Event)
+			arg1 = args[1].([]dto.Event)
 		}
 		run(
 			arg0,
@@ -384,12 +384,12 @@ func (_c *MockEventCacheClient_SaveNewEvents_Call) Run(run func(context1 context
 	return _c
 }
 
-func (_c *MockEventCacheClient_SaveNewEvents_Call) Return(strings *[]string, err error) *MockEventCacheClient_SaveNewEvents_Call {
+func (_c *MockEventCacheClient_SaveNewEvents_Call) Return(strings []string, err error) *MockEventCacheClient_SaveNewEvents_Call {
 	_c.Call.Return(strings, err)
 	return _c
 }
 
-func (_c *MockEventCacheClient_SaveNewEvents_Call) RunAndReturn(run func(context1 context.Context, events *[]dto.Event) (*[]string, error)) *MockEventCacheClient_SaveNewEvents_Call {
+func (_c *MockEventCacheClient_SaveNewEvents_Call) RunAndReturn(run func(context1 context.Context, events []dto.Event) ([]string, error)) *MockEventCacheClient_SaveNewEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -422,23 +422,23 @@ func (_m *MockUserCacheClient) EXPECT() *MockUserCacheClient_Expecter {
 }
 
 // GetAll provides a mock function for the type MockUserCacheClient
-func (_mock *MockUserCacheClient) GetAll(context1 context.Context) (*[]string, error) {
+func (_mock *MockUserCacheClient) GetAll(context1 context.Context) ([]string, error) {
 	ret := _mock.Called(context1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
 	}
 
-	var r0 *[]string
+	var r0 []string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (*[]string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]string, error)); ok {
 		return returnFunc(context1)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) *[]string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []string); ok {
 		r0 = returnFunc(context1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]string)
+			r0 = ret.Get(0).([]string)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
@@ -473,12 +473,12 @@ func (_c *MockUserCacheClient_GetAll_Call) Run(run func(context1 context.Context
 	return _c
 }
 
-func (_c *MockUserCacheClient_GetAll_Call) Return(strings *[]string, err error) *MockUserCacheClient_GetAll_Call {
+func (_c *MockUserCacheClient_GetAll_Call) Return(strings []string, err error) *MockUserCacheClient_GetAll_Call {
 	_c.Call.Return(strings, err)
 	return _c
 }
 
-func (_c *MockUserCacheClient_GetAll_Call) RunAndReturn(run func(context1 context.Context) (*[]string, error)) *MockUserCacheClient_GetAll_Call {
+func (_c *MockUserCacheClient_GetAll_Call) RunAndReturn(run func(context1 context.Context) ([]string, error)) *MockUserCacheClient_GetAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -541,7 +541,7 @@ func (_c *MockUserCacheClient_Save_Call) RunAndReturn(run func(context1 context.
 }
 
 // SaveAll provides a mock function for the type MockUserCacheClient
-func (_mock *MockUserCacheClient) SaveAll(context1 context.Context, strings *[]string) error {
+func (_mock *MockUserCacheClient) SaveAll(context1 context.Context, strings []string) error {
 	ret := _mock.Called(context1, strings)
 
 	if len(ret) == 0 {
@@ -549,7 +549,7 @@ func (_mock *MockUserCacheClient) SaveAll(context1 context.Context, strings *[]s
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]string) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []string) error); ok {
 		r0 = returnFunc(context1, strings)
 	} else {
 		r0 = ret.Error(0)
@@ -564,20 +564,20 @@ type MockUserCacheClient_SaveAll_Call struct {
 
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
-//   - strings *[]string
+//   - strings []string
 func (_e *MockUserCacheClient_Expecter) SaveAll(context1 interface{}, strings interface{}) *MockUserCacheClient_SaveAll_Call {
 	return &MockUserCacheClient_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, strings)}
 }
 
-func (_c *MockUserCacheClient_SaveAll_Call) Run(run func(context1 context.Context, strings *[]string)) *MockUserCacheClient_SaveAll_Call {
+func (_c *MockUserCacheClient_SaveAll_Call) Run(run func(context1 context.Context, strings []string)) *MockUserCacheClient_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *[]string
+		var arg1 []string
 		if args[1] != nil {
-			arg1 = args[1].(*[]string)
+			arg1 = args[1].([]string)
 		}
 		run(
 			arg0,
@@ -592,7 +592,7 @@ func (_c *MockUserCacheClient_SaveAll_Call) Return(err error) *MockUserCacheClie
 	return _c
 }
 
-func (_c *MockUserCacheClient_SaveAll_Call) RunAndReturn(run func(context1 context.Context, strings *[]string) error) *MockUserCacheClient_SaveAll_Call {
+func (_c *MockUserCacheClient_SaveAll_Call) RunAndReturn(run func(context1 context.Context, strings []string) error) *MockUserCacheClient_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }

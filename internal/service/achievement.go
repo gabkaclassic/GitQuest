@@ -18,8 +18,8 @@ const (
 )
 
 type AchievementService interface {
-	CheckForNewAchievements(context.Context, *[]dto.Rule) error
-	ReevalByDiffs(*[]dto.RuleDiff) error
+	CheckForNewAchievements(context.Context, []dto.Rule) error
+	ReevalByDiffs([]dto.RuleDiff) error
 }
 
 type achievementService struct {
@@ -76,13 +76,13 @@ func NewAchievementService(
 
 func (service *achievementService) CheckForNewAchievements(
 	ctx context.Context,
-	rules *[]dto.Rule,
+	rules []dto.Rule,
 ) error {
 	users, err := service.userCacheClient.GetAll(ctx)
 	if err != nil {
 		return fmt.Errorf("get users from cache error %w", err)
 	}
-	tasks := make(chan string, len(*users))
+	tasks := make(chan string, len(users))
 	results := make(chan dto.Achievement)
 
 	wg := sync.WaitGroup{}
@@ -97,7 +97,7 @@ func (service *achievementService) CheckForNewAchievements(
 		}()
 	}
 
-	for _, user := range *users {
+	for _, user := range users {
 		tasks <- user
 	}
 	close(tasks)
@@ -116,11 +116,11 @@ func (service *achievementService) CheckForNewAchievements(
 		return nil
 	}
 
-	if err := service.repository.SaveAll(&achievements); err != nil {
+	if err := service.repository.SaveAll(achievements); err != nil {
 		return fmt.Errorf("save new achievements to DB error %w", err)
 	}
 
-	if err := service.achievementCacheClient.SaveAll(ctx, &achievements); err != nil {
+	if err := service.achievementCacheClient.SaveAll(ctx, achievements); err != nil {
 		return fmt.Errorf("save new achievements to cache error %w", err)
 	}
 
@@ -141,7 +141,7 @@ func (service *achievementService) CheckForNewAchievements(
 		}
 	}
 
-	if err := service.notificationService.Notify(&notifications); err != nil {
+	if err := service.notificationService.Notify(notifications); err != nil {
 		return fmt.Errorf("send notification error: %w", err)
 	}
 
@@ -151,12 +151,12 @@ func (service *achievementService) CheckForNewAchievements(
 func (service *achievementService) processUserEvents(
 	ctx context.Context,
 	user string,
-	rules *[]dto.Rule,
+	rules []dto.Rule,
 	out chan<- dto.Achievement,
 ) error {
 	now := time.Now()
 
-	for _, rule := range *rules {
+	for _, rule := range rules {
 		startRange := now.Add(-time.Duration(rule.Window))
 
 		eventsTimestamps, err := service.eventCacheClient.GetUserEventsTimestampsByTypeAndRange(ctx, user, rule.EventType, startRange, now)
@@ -169,7 +169,7 @@ func (service *achievementService) processUserEvents(
 			continue
 		}
 
-		if !rule.Condition.Compare(len(*eventsTimestamps), rule.Count) {
+		if !rule.Condition.Compare(len(eventsTimestamps), rule.Count) {
 			continue
 		}
 
@@ -211,12 +211,12 @@ func (service *achievementService) processUserEvents(
 	return nil
 }
 
-func (service *achievementService) ReevalByDiffs(diffs *[]dto.RuleDiff) error {
+func (service *achievementService) ReevalByDiffs(diffs []dto.RuleDiff) error {
 
 	var wg sync.WaitGroup
 	errCh := make(chan error)
 
-	for _, diff := range *diffs {
+	for _, diff := range diffs {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -244,9 +244,9 @@ func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
 		return err
 	}
 
-	notifications := make([]dto.Notification, len(*users))
+	notifications := make([]dto.Notification, len(users))
 
-	for ind, user := range *users {
+	for ind, user := range users {
 		notificationID, err := uuid.NewUUID()
 
 		if err != nil {
@@ -262,7 +262,7 @@ func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
 		}
 	}
 
-	err = service.notificationService.Notify(&notifications)
+	err = service.notificationService.Notify(notifications)
 
 	if err != nil {
 		slog.Error("Send notification error", slog.Any("error", err))
@@ -272,15 +272,15 @@ func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
 	return nil
 }
 
-func checkStreak(timestamps *[]time.Time, days int) bool {
-	if len(*timestamps) == 0 {
+func checkStreak(timestamps []time.Time, days int) bool {
+	if len(timestamps) == 0 {
 		return false
 	}
 
 	seen := make(map[int]struct{})
 	start := time.Now().Add(time.Duration(-(days - 1)) * 24 * time.Hour).Truncate(24 * time.Hour)
 
-	for _, t := range *timestamps {
+	for _, t := range timestamps {
 		day := t.Truncate(24 * time.Hour)
 		if day.Before(start) {
 			continue

@@ -8,9 +8,9 @@ import (
 )
 
 type RuleRepository interface {
-	SaveAll(rules *[]dto.Rule) error
-	GetRule(name string, version string) (*dto.Rule, error)
-	GetLastRule(name string) (*dto.Rule, error)
+	SaveAll([]dto.Rule) error
+	GetRule(string, string) (*dto.Rule, error)
+	GetLastRule(string) (*dto.Rule, error)
 }
 
 type ruleRepository struct {
@@ -28,7 +28,7 @@ func NewRuleRepository(storage *sql.DB) (RuleRepository, error) {
 	}, nil
 }
 
-func (repository *ruleRepository) SaveAll(rules *[]dto.Rule) error {
+func (repository *ruleRepository) SaveAll(rules []dto.Rule) error {
 
 	if rules == nil {
 		return errors.New("rules cannot be nil")
@@ -51,7 +51,7 @@ func (repository *ruleRepository) SaveAll(rules *[]dto.Rule) error {
 		}
 		defer stmt.Close()
 
-		for _, rule := range *rules {
+		for _, rule := range rules {
 			_, err = stmt.Exec(
 				rule.Name, rule.Description, rule.EventType, rule.Window.ToNanoseconds(),
 				rule.Count, string(rule.Condition), rule.Streak, rule.Reward, rule.Version,

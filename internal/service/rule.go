@@ -10,8 +10,8 @@ import (
 )
 
 type RuleService interface {
-	SaveAll(*[]dto.Rule) error
-	GetRulesDiffs(*[]dto.Rule) (*[]dto.RuleDiff, error)
+	SaveAll([]dto.Rule) error
+	GetRulesDiffs([]dto.Rule) ([]dto.RuleDiff, error)
 }
 
 type ruleService struct {
@@ -29,15 +29,15 @@ func NewRuleService(repository repository.RuleRepository) (RuleService, error) {
 	}, nil
 }
 
-func (service *ruleService) SaveAll(rules *[]dto.Rule) error {
+func (service *ruleService) SaveAll(rules []dto.Rule) error {
 
 	return service.repository.SaveAll(rules)
 }
 
-func (service *ruleService) GetRulesDiffs(rules *[]dto.Rule) (*[]dto.RuleDiff, error) {
+func (service *ruleService) GetRulesDiffs(rules []dto.Rule) ([]dto.RuleDiff, error) {
 	diffs := make([]dto.RuleDiff, 0)
 
-	for _, rule := range *rules {
+	for _, rule := range rules {
 		lastRuleVersion, err := service.repository.GetLastRule(rule.Name)
 
 		if err != nil {
@@ -57,5 +57,5 @@ func (service *ruleService) GetRulesDiffs(rules *[]dto.Rule) (*[]dto.RuleDiff, e
 		}
 	}
 
-	return &diffs, nil
+	return diffs, nil
 }

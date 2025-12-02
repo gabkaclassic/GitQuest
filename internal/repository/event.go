@@ -9,8 +9,8 @@ import (
 )
 
 type EventRepository interface {
-	SaveAll(events *[]dto.Event) error
-	GetAllUsersWithEvents() (*[]string, error)
+	SaveAll([]dto.Event) error
+	GetAllUsersWithEvents() ([]string, error)
 }
 
 type eventRepository struct {
@@ -28,7 +28,7 @@ func NewEventRepository(storage *sql.DB) (EventRepository, error) {
 	}, nil
 }
 
-func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
+func (repository *eventRepository) SaveAll(events []dto.Event) error {
 
 	if events == nil {
 		return errors.New("events cannot be nil")
@@ -47,7 +47,7 @@ func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
 			return err
 		}
 
-		for _, event := range *events {
+		for _, event := range events {
 			_, err = stmt.Exec(event.ID, event.Actor, event.Timestamp, event.EventType)
 			if err != nil {
 				return err
@@ -69,7 +69,7 @@ func (repository *eventRepository) SaveAll(events *[]dto.Event) error {
 	})
 }
 
-func (repository *eventRepository) GetAllUsersWithEvents() (*[]string, error) {
+func (repository *eventRepository) GetAllUsersWithEvents() ([]string, error) {
 	users := make([]string, 0)
 	err := executeWithRetry(func() error {
 		rows, err := repository.storage.Query("SELECT actor DISTINCT FROM events")
@@ -96,5 +96,5 @@ func (repository *eventRepository) GetAllUsersWithEvents() (*[]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &users, nil
+	return users, nil
 }

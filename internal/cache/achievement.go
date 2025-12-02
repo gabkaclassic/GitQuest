@@ -15,7 +15,7 @@ const (
 )
 
 type AchievementCacheClient interface {
-	SaveAll(context.Context, *[]dto.Achievement) error
+	SaveAll(context.Context, []dto.Achievement) error
 	AchievementExists(context.Context, *dto.Achievement) (bool, error)
 }
 
@@ -34,7 +34,7 @@ func NewAchievementCacheClient(storage *redis.Client) (AchievementCacheClient, e
 	}, nil
 }
 
-func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements *[]dto.Achievement) error {
+func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements []dto.Achievement) error {
 
 	if achievements == nil {
 		return errors.New("achievements cannot be nil")
@@ -42,7 +42,7 @@ func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements 
 
 	pipeline := client.storage.TxPipeline()
 
-	for _, achievement := range *achievements {
+	for _, achievement := range achievements {
 		key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
 		pipeline.ZAdd(
 			ctx, key, redis.Z{

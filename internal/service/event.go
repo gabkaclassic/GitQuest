@@ -12,8 +12,8 @@ import (
 )
 
 type EventService interface {
-	SaveAll(ctx context.Context, events *[]dto.Event) *api.APIError
-	LoadUsersToCache(ctx context.Context) error
+	SaveAll(context.Context, []dto.Event) *api.APIError
+	LoadUsersToCache(context.Context) error
 }
 
 type eventService struct {
@@ -43,7 +43,7 @@ func NewEventService(repository repository.EventRepository, eventCacheClient cac
 	}, nil
 }
 
-func (service *eventService) SaveAll(ctx context.Context, events *[]dto.Event) *api.APIError {
+func (service *eventService) SaveAll(ctx context.Context, events []dto.Event) *api.APIError {
 
 	err := service.repository.SaveAll(events)
 

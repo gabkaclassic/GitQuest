@@ -41,7 +41,7 @@ func (_m *MockAchievementService) EXPECT() *MockAchievementService_Expecter {
 }
 
 // CheckForNewAchievements provides a mock function for the type MockAchievementService
-func (_mock *MockAchievementService) CheckForNewAchievements(context1 context.Context, rules *[]dto.Rule) error {
+func (_mock *MockAchievementService) CheckForNewAchievements(context1 context.Context, rules []dto.Rule) error {
 	ret := _mock.Called(context1, rules)
 
 	if len(ret) == 0 {
@@ -49,7 +49,7 @@ func (_mock *MockAchievementService) CheckForNewAchievements(context1 context.Co
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]dto.Rule) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Rule) error); ok {
 		r0 = returnFunc(context1, rules)
 	} else {
 		r0 = ret.Error(0)
@@ -64,20 +64,20 @@ type MockAchievementService_CheckForNewAchievements_Call struct {
 
 // CheckForNewAchievements is a helper method to define mock.On call
 //   - context1 context.Context
-//   - rules *[]dto.Rule
+//   - rules []dto.Rule
 func (_e *MockAchievementService_Expecter) CheckForNewAchievements(context1 interface{}, rules interface{}) *MockAchievementService_CheckForNewAchievements_Call {
 	return &MockAchievementService_CheckForNewAchievements_Call{Call: _e.mock.On("CheckForNewAchievements", context1, rules)}
 }
 
-func (_c *MockAchievementService_CheckForNewAchievements_Call) Run(run func(context1 context.Context, rules *[]dto.Rule)) *MockAchievementService_CheckForNewAchievements_Call {
+func (_c *MockAchievementService_CheckForNewAchievements_Call) Run(run func(context1 context.Context, rules []dto.Rule)) *MockAchievementService_CheckForNewAchievements_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *[]dto.Rule
+		var arg1 []dto.Rule
 		if args[1] != nil {
-			arg1 = args[1].(*[]dto.Rule)
+			arg1 = args[1].([]dto.Rule)
 		}
 		run(
 			arg0,
@@ -92,13 +92,13 @@ func (_c *MockAchievementService_CheckForNewAchievements_Call) Return(err error)
 	return _c
 }
 
-func (_c *MockAchievementService_CheckForNewAchievements_Call) RunAndReturn(run func(context1 context.Context, rules *[]dto.Rule) error) *MockAchievementService_CheckForNewAchievements_Call {
+func (_c *MockAchievementService_CheckForNewAchievements_Call) RunAndReturn(run func(context1 context.Context, rules []dto.Rule) error) *MockAchievementService_CheckForNewAchievements_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ReevalByDiffs provides a mock function for the type MockAchievementService
-func (_mock *MockAchievementService) ReevalByDiffs(ruleDiffs *[]dto.RuleDiff) error {
+func (_mock *MockAchievementService) ReevalByDiffs(ruleDiffs []dto.RuleDiff) error {
 	ret := _mock.Called(ruleDiffs)
 
 	if len(ret) == 0 {
@@ -106,7 +106,7 @@ func (_mock *MockAchievementService) ReevalByDiffs(ruleDiffs *[]dto.RuleDiff) er
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.RuleDiff) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.RuleDiff) error); ok {
 		r0 = returnFunc(ruleDiffs)
 	} else {
 		r0 = ret.Error(0)
@@ -120,16 +120,16 @@ type MockAchievementService_ReevalByDiffs_Call struct {
 }
 
 // ReevalByDiffs is a helper method to define mock.On call
-//   - ruleDiffs *[]dto.RuleDiff
+//   - ruleDiffs []dto.RuleDiff
 func (_e *MockAchievementService_Expecter) ReevalByDiffs(ruleDiffs interface{}) *MockAchievementService_ReevalByDiffs_Call {
 	return &MockAchievementService_ReevalByDiffs_Call{Call: _e.mock.On("ReevalByDiffs", ruleDiffs)}
 }
 
-func (_c *MockAchievementService_ReevalByDiffs_Call) Run(run func(ruleDiffs *[]dto.RuleDiff)) *MockAchievementService_ReevalByDiffs_Call {
+func (_c *MockAchievementService_ReevalByDiffs_Call) Run(run func(ruleDiffs []dto.RuleDiff)) *MockAchievementService_ReevalByDiffs_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.RuleDiff
+		var arg0 []dto.RuleDiff
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.RuleDiff)
+			arg0 = args[0].([]dto.RuleDiff)
 		}
 		run(
 			arg0,
@@ -143,7 +143,7 @@ func (_c *MockAchievementService_ReevalByDiffs_Call) Return(err error) *MockAchi
 	return _c
 }
 
-func (_c *MockAchievementService_ReevalByDiffs_Call) RunAndReturn(run func(ruleDiffs *[]dto.RuleDiff) error) *MockAchievementService_ReevalByDiffs_Call {
+func (_c *MockAchievementService_ReevalByDiffs_Call) RunAndReturn(run func(ruleDiffs []dto.RuleDiff) error) *MockAchievementService_ReevalByDiffs_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -176,8 +176,8 @@ func (_m *MockEventService) EXPECT() *MockEventService_Expecter {
 }
 
 // LoadUsersToCache provides a mock function for the type MockEventService
-func (_mock *MockEventService) LoadUsersToCache(ctx context.Context) error {
-	ret := _mock.Called(ctx)
+func (_mock *MockEventService) LoadUsersToCache(context1 context.Context) error {
+	ret := _mock.Called(context1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoadUsersToCache")
@@ -185,7 +185,7 @@ func (_mock *MockEventService) LoadUsersToCache(ctx context.Context) error {
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(ctx)
+		r0 = returnFunc(context1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -198,12 +198,12 @@ type MockEventService_LoadUsersToCache_Call struct {
 }
 
 // LoadUsersToCache is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockEventService_Expecter) LoadUsersToCache(ctx interface{}) *MockEventService_LoadUsersToCache_Call {
-	return &MockEventService_LoadUsersToCache_Call{Call: _e.mock.On("LoadUsersToCache", ctx)}
+//   - context1 context.Context
+func (_e *MockEventService_Expecter) LoadUsersToCache(context1 interface{}) *MockEventService_LoadUsersToCache_Call {
+	return &MockEventService_LoadUsersToCache_Call{Call: _e.mock.On("LoadUsersToCache", context1)}
 }
 
-func (_c *MockEventService_LoadUsersToCache_Call) Run(run func(ctx context.Context)) *MockEventService_LoadUsersToCache_Call {
+func (_c *MockEventService_LoadUsersToCache_Call) Run(run func(context1 context.Context)) *MockEventService_LoadUsersToCache_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -221,22 +221,22 @@ func (_c *MockEventService_LoadUsersToCache_Call) Return(err error) *MockEventSe
 	return _c
 }
 
-func (_c *MockEventService_LoadUsersToCache_Call) RunAndReturn(run func(ctx context.Context) error) *MockEventService_LoadUsersToCache_Call {
+func (_c *MockEventService_LoadUsersToCache_Call) RunAndReturn(run func(context1 context.Context) error) *MockEventService_LoadUsersToCache_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockEventService
-func (_mock *MockEventService) SaveAll(ctx context.Context, events *[]dto.Event) *api.APIError {
-	ret := _mock.Called(ctx, events)
+func (_mock *MockEventService) SaveAll(context1 context.Context, events []dto.Event) *api.APIError {
+	ret := _mock.Called(context1, events)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveAll")
 	}
 
 	var r0 *api.APIError
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]dto.Event) *api.APIError); ok {
-		r0 = returnFunc(ctx, events)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Event) *api.APIError); ok {
+		r0 = returnFunc(context1, events)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*api.APIError)
@@ -251,21 +251,21 @@ type MockEventService_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
-//   - ctx context.Context
-//   - events *[]dto.Event
-func (_e *MockEventService_Expecter) SaveAll(ctx interface{}, events interface{}) *MockEventService_SaveAll_Call {
-	return &MockEventService_SaveAll_Call{Call: _e.mock.On("SaveAll", ctx, events)}
+//   - context1 context.Context
+//   - events []dto.Event
+func (_e *MockEventService_Expecter) SaveAll(context1 interface{}, events interface{}) *MockEventService_SaveAll_Call {
+	return &MockEventService_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, events)}
 }
 
-func (_c *MockEventService_SaveAll_Call) Run(run func(ctx context.Context, events *[]dto.Event)) *MockEventService_SaveAll_Call {
+func (_c *MockEventService_SaveAll_Call) Run(run func(context1 context.Context, events []dto.Event)) *MockEventService_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *[]dto.Event
+		var arg1 []dto.Event
 		if args[1] != nil {
-			arg1 = args[1].(*[]dto.Event)
+			arg1 = args[1].([]dto.Event)
 		}
 		run(
 			arg0,
@@ -280,7 +280,7 @@ func (_c *MockEventService_SaveAll_Call) Return(aPIError *api.APIError) *MockEve
 	return _c
 }
 
-func (_c *MockEventService_SaveAll_Call) RunAndReturn(run func(ctx context.Context, events *[]dto.Event) *api.APIError) *MockEventService_SaveAll_Call {
+func (_c *MockEventService_SaveAll_Call) RunAndReturn(run func(context1 context.Context, events []dto.Event) *api.APIError) *MockEventService_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -313,7 +313,7 @@ func (_m *MockNotificationService) EXPECT() *MockNotificationService_Expecter {
 }
 
 // Notify provides a mock function for the type MockNotificationService
-func (_mock *MockNotificationService) Notify(notifications *[]dto.Notification) error {
+func (_mock *MockNotificationService) Notify(notifications []dto.Notification) error {
 	ret := _mock.Called(notifications)
 
 	if len(ret) == 0 {
@@ -321,7 +321,7 @@ func (_mock *MockNotificationService) Notify(notifications *[]dto.Notification) 
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Notification) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Notification) error); ok {
 		r0 = returnFunc(notifications)
 	} else {
 		r0 = ret.Error(0)
@@ -335,16 +335,16 @@ type MockNotificationService_Notify_Call struct {
 }
 
 // Notify is a helper method to define mock.On call
-//   - notifications *[]dto.Notification
+//   - notifications []dto.Notification
 func (_e *MockNotificationService_Expecter) Notify(notifications interface{}) *MockNotificationService_Notify_Call {
 	return &MockNotificationService_Notify_Call{Call: _e.mock.On("Notify", notifications)}
 }
 
-func (_c *MockNotificationService_Notify_Call) Run(run func(notifications *[]dto.Notification)) *MockNotificationService_Notify_Call {
+func (_c *MockNotificationService_Notify_Call) Run(run func(notifications []dto.Notification)) *MockNotificationService_Notify_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Notification
+		var arg0 []dto.Notification
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Notification)
+			arg0 = args[0].([]dto.Notification)
 		}
 		run(
 			arg0,
@@ -358,7 +358,7 @@ func (_c *MockNotificationService_Notify_Call) Return(err error) *MockNotificati
 	return _c
 }
 
-func (_c *MockNotificationService_Notify_Call) RunAndReturn(run func(notifications *[]dto.Notification) error) *MockNotificationService_Notify_Call {
+func (_c *MockNotificationService_Notify_Call) RunAndReturn(run func(notifications []dto.Notification) error) *MockNotificationService_Notify_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -391,26 +391,26 @@ func (_m *MockRuleService) EXPECT() *MockRuleService_Expecter {
 }
 
 // GetRulesDiffs provides a mock function for the type MockRuleService
-func (_mock *MockRuleService) GetRulesDiffs(rules *[]dto.Rule) (*[]dto.RuleDiff, error) {
+func (_mock *MockRuleService) GetRulesDiffs(rules []dto.Rule) ([]dto.RuleDiff, error) {
 	ret := _mock.Called(rules)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetRulesDiffs")
 	}
 
-	var r0 *[]dto.RuleDiff
+	var r0 []dto.RuleDiff
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Rule) (*[]dto.RuleDiff, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Rule) ([]dto.RuleDiff, error)); ok {
 		return returnFunc(rules)
 	}
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Rule) *[]dto.RuleDiff); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Rule) []dto.RuleDiff); ok {
 		r0 = returnFunc(rules)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]dto.RuleDiff)
+			r0 = ret.Get(0).([]dto.RuleDiff)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(*[]dto.Rule) error); ok {
+	if returnFunc, ok := ret.Get(1).(func([]dto.Rule) error); ok {
 		r1 = returnFunc(rules)
 	} else {
 		r1 = ret.Error(1)
@@ -424,16 +424,16 @@ type MockRuleService_GetRulesDiffs_Call struct {
 }
 
 // GetRulesDiffs is a helper method to define mock.On call
-//   - rules *[]dto.Rule
+//   - rules []dto.Rule
 func (_e *MockRuleService_Expecter) GetRulesDiffs(rules interface{}) *MockRuleService_GetRulesDiffs_Call {
 	return &MockRuleService_GetRulesDiffs_Call{Call: _e.mock.On("GetRulesDiffs", rules)}
 }
 
-func (_c *MockRuleService_GetRulesDiffs_Call) Run(run func(rules *[]dto.Rule)) *MockRuleService_GetRulesDiffs_Call {
+func (_c *MockRuleService_GetRulesDiffs_Call) Run(run func(rules []dto.Rule)) *MockRuleService_GetRulesDiffs_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Rule
+		var arg0 []dto.Rule
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Rule)
+			arg0 = args[0].([]dto.Rule)
 		}
 		run(
 			arg0,
@@ -442,18 +442,18 @@ func (_c *MockRuleService_GetRulesDiffs_Call) Run(run func(rules *[]dto.Rule)) *
 	return _c
 }
 
-func (_c *MockRuleService_GetRulesDiffs_Call) Return(ruleDiffs *[]dto.RuleDiff, err error) *MockRuleService_GetRulesDiffs_Call {
+func (_c *MockRuleService_GetRulesDiffs_Call) Return(ruleDiffs []dto.RuleDiff, err error) *MockRuleService_GetRulesDiffs_Call {
 	_c.Call.Return(ruleDiffs, err)
 	return _c
 }
 
-func (_c *MockRuleService_GetRulesDiffs_Call) RunAndReturn(run func(rules *[]dto.Rule) (*[]dto.RuleDiff, error)) *MockRuleService_GetRulesDiffs_Call {
+func (_c *MockRuleService_GetRulesDiffs_Call) RunAndReturn(run func(rules []dto.Rule) ([]dto.RuleDiff, error)) *MockRuleService_GetRulesDiffs_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockRuleService
-func (_mock *MockRuleService) SaveAll(rules *[]dto.Rule) error {
+func (_mock *MockRuleService) SaveAll(rules []dto.Rule) error {
 	ret := _mock.Called(rules)
 
 	if len(ret) == 0 {
@@ -461,7 +461,7 @@ func (_mock *MockRuleService) SaveAll(rules *[]dto.Rule) error {
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Rule) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Rule) error); ok {
 		r0 = returnFunc(rules)
 	} else {
 		r0 = ret.Error(0)
@@ -475,16 +475,16 @@ type MockRuleService_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
-//   - rules *[]dto.Rule
+//   - rules []dto.Rule
 func (_e *MockRuleService_Expecter) SaveAll(rules interface{}) *MockRuleService_SaveAll_Call {
 	return &MockRuleService_SaveAll_Call{Call: _e.mock.On("SaveAll", rules)}
 }
 
-func (_c *MockRuleService_SaveAll_Call) Run(run func(rules *[]dto.Rule)) *MockRuleService_SaveAll_Call {
+func (_c *MockRuleService_SaveAll_Call) Run(run func(rules []dto.Rule)) *MockRuleService_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Rule
+		var arg0 []dto.Rule
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Rule)
+			arg0 = args[0].([]dto.Rule)
 		}
 		run(
 			arg0,
@@ -498,7 +498,7 @@ func (_c *MockRuleService_SaveAll_Call) Return(err error) *MockRuleService_SaveA
 	return _c
 }
 
-func (_c *MockRuleService_SaveAll_Call) RunAndReturn(run func(rules *[]dto.Rule) error) *MockRuleService_SaveAll_Call {
+func (_c *MockRuleService_SaveAll_Call) RunAndReturn(run func(rules []dto.Rule) error) *MockRuleService_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }

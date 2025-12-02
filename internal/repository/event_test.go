@@ -69,7 +69,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]dto.Event
+		input       []dto.Event
 		expectError bool
 	}{
 		{
@@ -85,7 +85,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectCommit()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{
 					ID:        "id1",
 					Actor:     "actor1",
@@ -100,7 +100,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 			mockFn: func() {
 				mock.ExpectBegin().WillReturnError(errors.New("fail"))
 			},
-			input:       &[]dto.Event{},
+			input:       []dto.Event{},
 			expectError: true,
 		},
 		{
@@ -111,7 +111,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 					WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input:       &[]dto.Event{},
+			input:       []dto.Event{},
 			expectError: true,
 		},
 		{
@@ -124,7 +124,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 					WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{
 					ID:        "id1",
 					Actor:     "actor1",
@@ -146,7 +146,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnError(errors.New("fail"))
 				mock.ExpectRollback()
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{
 					ID:        "id1",
 					Actor:     "actor1",
@@ -168,7 +168,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 				mock.ExpectExec(".*").WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectCommit().WillReturnError(errors.New("fail"))
 			},
-			input: &[]dto.Event{
+			input: []dto.Event{
 				{
 					ID:        "id1",
 					Actor:     "actor1",
@@ -212,7 +212,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		expectData  *[]string
+		expectData  []string
 		expectError bool
 	}{
 		{
@@ -223,7 +223,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 					AddRow("user2")
 				mock.ExpectQuery("SELECT actor DISTINCT FROM events").WillReturnRows(rows)
 			},
-			expectData:  &[]string{"user1", "user2"},
+			expectData:  []string{"user1", "user2"},
 			expectError: false,
 		},
 		{

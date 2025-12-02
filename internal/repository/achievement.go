@@ -9,9 +9,9 @@ import (
 )
 
 type AchievementRepository interface {
-	SaveAll(*[]dto.Achievement) error
+	SaveAll([]dto.Achievement) error
 	ExistsInAllTime(*dto.Achievement) (bool, error)
-	ReevalByRuleDiff(*dto.RuleDiff) (*[]string, error)
+	ReevalByRuleDiff(*dto.RuleDiff) ([]string, error)
 }
 
 type achievementRepository struct {
@@ -29,7 +29,7 @@ func NewAchievementRepository(storage *sql.DB) (AchievementRepository, error) {
 	}, nil
 }
 
-func (repository *achievementRepository) SaveAll(achievements *[]dto.Achievement) error {
+func (repository *achievementRepository) SaveAll(achievements []dto.Achievement) error {
 	return executeWithRetry(func() error {
 		tx, err := repository.storage.Begin()
 		if err != nil {
@@ -43,7 +43,7 @@ func (repository *achievementRepository) SaveAll(achievements *[]dto.Achievement
 			return err
 		}
 
-		for _, achievement := range *achievements {
+		for _, achievement := range achievements {
 			_, err = stmt.Exec(achievement.User, achievement.RuleName, achievement.RuleVersion, achievement.Reward, achievement.StartRange, achievement.EndRange)
 			if err != nil {
 				return err
@@ -81,7 +81,7 @@ func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achiev
 	return exists, err
 }
 
-func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) (*[]string, error) {
+func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) ([]string, error) {
 
 	if diff == nil {
 		return nil, errors.New("diff cannot be nil")
@@ -119,5 +119,5 @@ func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) (*
 		return nil, err
 	}
 
-	return &users, nil
+	return users, nil
 }

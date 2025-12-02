@@ -14,7 +14,7 @@ import (
 )
 
 type NotificationService interface {
-	Notify(*[]dto.Notification) error
+	Notify([]dto.Notification) error
 }
 
 type notificationService struct {
@@ -38,9 +38,9 @@ func NewNotificationService(cfg *config.Notification) (NotificationService, erro
 	}, nil
 }
 
-func (service *notificationService) Notify(notifications *[]dto.Notification) error {
+func (service *notificationService) Notify(notifications []dto.Notification) error {
 
-	raw, err := json.Marshal(*notifications)
+	raw, err := json.Marshal(notifications)
 
 	if err != nil {
 		slog.Error("Notifications marchalling error", slog.Any("error", err))

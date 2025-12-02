@@ -71,7 +71,7 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 	tests := []struct {
 		name        string
 		mockFn      func()
-		input       *[]dto.Achievement
+		input       []dto.Achievement
 		expectError bool
 	}{
 		{
@@ -90,7 +90,7 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 
 				mock.ExpectTxPipelineExec()
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{User: "user1", RuleName: "rule1", RuleVersion: "v1", EndRange: time.Unix(100, 0)},
 				{User: "user2", RuleName: "rule2", RuleVersion: "v2", EndRange: time.Unix(200, 0)},
 			},
@@ -106,7 +106,7 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec().SetErr(errors.New("fail"))
 			},
-			input: &[]dto.Achievement{
+			input: []dto.Achievement{
 				{User: "user1", RuleName: "rule1", RuleVersion: "v1", EndRange: time.Unix(100, 0)},
 			},
 			expectError: true,
@@ -120,7 +120,7 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 		{
 			name:        "empty achievements",
 			mockFn:      func() {},
-			input:       &[]dto.Achievement{},
+			input:       []dto.Achievement{},
 			expectError: false,
 		},
 	}

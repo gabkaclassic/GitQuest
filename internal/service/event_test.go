@@ -116,7 +116,7 @@ func TestNewEventService(t *testing.T) {
 }
 
 func TestEventService_SaveAll(t *testing.T) {
-	events := &[]dto.Event{{Actor: "user1"}}
+	events := []dto.Event{{Actor: "user1"}}
 
 	type mocks struct {
 		repo       *repository.MockEventRepository
@@ -148,8 +148,8 @@ func TestEventService_SaveAll(t *testing.T) {
 			name: "user cache error",
 			setup: func(m mocks) {
 				m.repo.On("SaveAll", events).Return(nil)
-				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return(&[]string{"user1"}, nil)
-				m.userCache.On("SaveAll", mock.Anything, &[]string{"user1"}).Return(errors.New("user cache error"))
+				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return([]string{"user1"}, nil)
+				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(errors.New("user cache error"))
 			},
 			expectErr: "cache operations error",
 		},
@@ -157,8 +157,8 @@ func TestEventService_SaveAll(t *testing.T) {
 			name: "successful save",
 			setup: func(m mocks) {
 				m.repo.On("SaveAll", events).Return(nil)
-				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return(&[]string{"user1"}, nil)
-				m.userCache.On("SaveAll", mock.Anything, &[]string{"user1"}).Return(nil)
+				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return([]string{"user1"}, nil)
+				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(nil)
 			},
 			expectErr: "",
 		},
@@ -217,16 +217,16 @@ func TestEventService_LoadUsersToCache(t *testing.T) {
 		{
 			name: "user cache error",
 			setup: func(m mocks) {
-				m.repo.On("GetAllUsersWithEvents").Return(&[]string{"user1"}, nil)
-				m.userCache.On("SaveAll", mock.Anything, &[]string{"user1"}).Return(errors.New("cache error"))
+				m.repo.On("GetAllUsersWithEvents").Return([]string{"user1"}, nil)
+				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(errors.New("cache error"))
 			},
 			expectErr: "cache error",
 		},
 		{
 			name: "successful path",
 			setup: func(m mocks) {
-				m.repo.On("GetAllUsersWithEvents").Return(&[]string{"user1"}, nil)
-				m.userCache.On("SaveAll", mock.Anything, &[]string{"user1"}).Return(nil)
+				m.repo.On("GetAllUsersWithEvents").Return([]string{"user1"}, nil)
+				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(nil)
 			},
 			expectErr: "",
 		},

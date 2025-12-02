@@ -98,23 +98,23 @@ func (_c *MockAchievementRepository_ExistsInAllTime_Call) RunAndReturn(run func(
 }
 
 // ReevalByRuleDiff provides a mock function for the type MockAchievementRepository
-func (_mock *MockAchievementRepository) ReevalByRuleDiff(ruleDiff *dto.RuleDiff) (*[]string, error) {
+func (_mock *MockAchievementRepository) ReevalByRuleDiff(ruleDiff *dto.RuleDiff) ([]string, error) {
 	ret := _mock.Called(ruleDiff)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReevalByRuleDiff")
 	}
 
-	var r0 *[]string
+	var r0 []string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(*dto.RuleDiff) (*[]string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(*dto.RuleDiff) ([]string, error)); ok {
 		return returnFunc(ruleDiff)
 	}
-	if returnFunc, ok := ret.Get(0).(func(*dto.RuleDiff) *[]string); ok {
+	if returnFunc, ok := ret.Get(0).(func(*dto.RuleDiff) []string); ok {
 		r0 = returnFunc(ruleDiff)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]string)
+			r0 = ret.Get(0).([]string)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(*dto.RuleDiff) error); ok {
@@ -149,18 +149,18 @@ func (_c *MockAchievementRepository_ReevalByRuleDiff_Call) Run(run func(ruleDiff
 	return _c
 }
 
-func (_c *MockAchievementRepository_ReevalByRuleDiff_Call) Return(strings *[]string, err error) *MockAchievementRepository_ReevalByRuleDiff_Call {
+func (_c *MockAchievementRepository_ReevalByRuleDiff_Call) Return(strings []string, err error) *MockAchievementRepository_ReevalByRuleDiff_Call {
 	_c.Call.Return(strings, err)
 	return _c
 }
 
-func (_c *MockAchievementRepository_ReevalByRuleDiff_Call) RunAndReturn(run func(ruleDiff *dto.RuleDiff) (*[]string, error)) *MockAchievementRepository_ReevalByRuleDiff_Call {
+func (_c *MockAchievementRepository_ReevalByRuleDiff_Call) RunAndReturn(run func(ruleDiff *dto.RuleDiff) ([]string, error)) *MockAchievementRepository_ReevalByRuleDiff_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockAchievementRepository
-func (_mock *MockAchievementRepository) SaveAll(achievements *[]dto.Achievement) error {
+func (_mock *MockAchievementRepository) SaveAll(achievements []dto.Achievement) error {
 	ret := _mock.Called(achievements)
 
 	if len(ret) == 0 {
@@ -168,7 +168,7 @@ func (_mock *MockAchievementRepository) SaveAll(achievements *[]dto.Achievement)
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Achievement) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Achievement) error); ok {
 		r0 = returnFunc(achievements)
 	} else {
 		r0 = ret.Error(0)
@@ -182,16 +182,16 @@ type MockAchievementRepository_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
-//   - achievements *[]dto.Achievement
+//   - achievements []dto.Achievement
 func (_e *MockAchievementRepository_Expecter) SaveAll(achievements interface{}) *MockAchievementRepository_SaveAll_Call {
 	return &MockAchievementRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", achievements)}
 }
 
-func (_c *MockAchievementRepository_SaveAll_Call) Run(run func(achievements *[]dto.Achievement)) *MockAchievementRepository_SaveAll_Call {
+func (_c *MockAchievementRepository_SaveAll_Call) Run(run func(achievements []dto.Achievement)) *MockAchievementRepository_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Achievement
+		var arg0 []dto.Achievement
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Achievement)
+			arg0 = args[0].([]dto.Achievement)
 		}
 		run(
 			arg0,
@@ -205,7 +205,7 @@ func (_c *MockAchievementRepository_SaveAll_Call) Return(err error) *MockAchieve
 	return _c
 }
 
-func (_c *MockAchievementRepository_SaveAll_Call) RunAndReturn(run func(achievements *[]dto.Achievement) error) *MockAchievementRepository_SaveAll_Call {
+func (_c *MockAchievementRepository_SaveAll_Call) RunAndReturn(run func(achievements []dto.Achievement) error) *MockAchievementRepository_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -238,23 +238,23 @@ func (_m *MockEventRepository) EXPECT() *MockEventRepository_Expecter {
 }
 
 // GetAllUsersWithEvents provides a mock function for the type MockEventRepository
-func (_mock *MockEventRepository) GetAllUsersWithEvents() (*[]string, error) {
+func (_mock *MockEventRepository) GetAllUsersWithEvents() ([]string, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllUsersWithEvents")
 	}
 
-	var r0 *[]string
+	var r0 []string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (*[]string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func() ([]string, error)); ok {
 		return returnFunc()
 	}
-	if returnFunc, ok := ret.Get(0).(func() *[]string); ok {
+	if returnFunc, ok := ret.Get(0).(func() []string); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]string)
+			r0 = ret.Get(0).([]string)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func() error); ok {
@@ -282,18 +282,18 @@ func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Run(run func()) *MockE
 	return _c
 }
 
-func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Return(strings *[]string, err error) *MockEventRepository_GetAllUsersWithEvents_Call {
+func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Return(strings []string, err error) *MockEventRepository_GetAllUsersWithEvents_Call {
 	_c.Call.Return(strings, err)
 	return _c
 }
 
-func (_c *MockEventRepository_GetAllUsersWithEvents_Call) RunAndReturn(run func() (*[]string, error)) *MockEventRepository_GetAllUsersWithEvents_Call {
+func (_c *MockEventRepository_GetAllUsersWithEvents_Call) RunAndReturn(run func() ([]string, error)) *MockEventRepository_GetAllUsersWithEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockEventRepository
-func (_mock *MockEventRepository) SaveAll(events *[]dto.Event) error {
+func (_mock *MockEventRepository) SaveAll(events []dto.Event) error {
 	ret := _mock.Called(events)
 
 	if len(ret) == 0 {
@@ -301,7 +301,7 @@ func (_mock *MockEventRepository) SaveAll(events *[]dto.Event) error {
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Event) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Event) error); ok {
 		r0 = returnFunc(events)
 	} else {
 		r0 = ret.Error(0)
@@ -315,16 +315,16 @@ type MockEventRepository_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
-//   - events *[]dto.Event
+//   - events []dto.Event
 func (_e *MockEventRepository_Expecter) SaveAll(events interface{}) *MockEventRepository_SaveAll_Call {
 	return &MockEventRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", events)}
 }
 
-func (_c *MockEventRepository_SaveAll_Call) Run(run func(events *[]dto.Event)) *MockEventRepository_SaveAll_Call {
+func (_c *MockEventRepository_SaveAll_Call) Run(run func(events []dto.Event)) *MockEventRepository_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Event
+		var arg0 []dto.Event
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Event)
+			arg0 = args[0].([]dto.Event)
 		}
 		run(
 			arg0,
@@ -338,7 +338,7 @@ func (_c *MockEventRepository_SaveAll_Call) Return(err error) *MockEventReposito
 	return _c
 }
 
-func (_c *MockEventRepository_SaveAll_Call) RunAndReturn(run func(events *[]dto.Event) error) *MockEventRepository_SaveAll_Call {
+func (_c *MockEventRepository_SaveAll_Call) RunAndReturn(run func(events []dto.Event) error) *MockEventRepository_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -371,8 +371,8 @@ func (_m *MockRuleRepository) EXPECT() *MockRuleRepository_Expecter {
 }
 
 // GetLastRule provides a mock function for the type MockRuleRepository
-func (_mock *MockRuleRepository) GetLastRule(name string) (*dto.Rule, error) {
-	ret := _mock.Called(name)
+func (_mock *MockRuleRepository) GetLastRule(s string) (*dto.Rule, error) {
+	ret := _mock.Called(s)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetLastRule")
@@ -381,17 +381,17 @@ func (_mock *MockRuleRepository) GetLastRule(name string) (*dto.Rule, error) {
 	var r0 *dto.Rule
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(string) (*dto.Rule, error)); ok {
-		return returnFunc(name)
+		return returnFunc(s)
 	}
 	if returnFunc, ok := ret.Get(0).(func(string) *dto.Rule); ok {
-		r0 = returnFunc(name)
+		r0 = returnFunc(s)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*dto.Rule)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(name)
+		r1 = returnFunc(s)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -404,12 +404,12 @@ type MockRuleRepository_GetLastRule_Call struct {
 }
 
 // GetLastRule is a helper method to define mock.On call
-//   - name string
-func (_e *MockRuleRepository_Expecter) GetLastRule(name interface{}) *MockRuleRepository_GetLastRule_Call {
-	return &MockRuleRepository_GetLastRule_Call{Call: _e.mock.On("GetLastRule", name)}
+//   - s string
+func (_e *MockRuleRepository_Expecter) GetLastRule(s interface{}) *MockRuleRepository_GetLastRule_Call {
+	return &MockRuleRepository_GetLastRule_Call{Call: _e.mock.On("GetLastRule", s)}
 }
 
-func (_c *MockRuleRepository_GetLastRule_Call) Run(run func(name string)) *MockRuleRepository_GetLastRule_Call {
+func (_c *MockRuleRepository_GetLastRule_Call) Run(run func(s string)) *MockRuleRepository_GetLastRule_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -427,14 +427,14 @@ func (_c *MockRuleRepository_GetLastRule_Call) Return(rule *dto.Rule, err error)
 	return _c
 }
 
-func (_c *MockRuleRepository_GetLastRule_Call) RunAndReturn(run func(name string) (*dto.Rule, error)) *MockRuleRepository_GetLastRule_Call {
+func (_c *MockRuleRepository_GetLastRule_Call) RunAndReturn(run func(s string) (*dto.Rule, error)) *MockRuleRepository_GetLastRule_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetRule provides a mock function for the type MockRuleRepository
-func (_mock *MockRuleRepository) GetRule(name string, version string) (*dto.Rule, error) {
-	ret := _mock.Called(name, version)
+func (_mock *MockRuleRepository) GetRule(s string, s1 string) (*dto.Rule, error) {
+	ret := _mock.Called(s, s1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetRule")
@@ -443,17 +443,17 @@ func (_mock *MockRuleRepository) GetRule(name string, version string) (*dto.Rule
 	var r0 *dto.Rule
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(string, string) (*dto.Rule, error)); ok {
-		return returnFunc(name, version)
+		return returnFunc(s, s1)
 	}
 	if returnFunc, ok := ret.Get(0).(func(string, string) *dto.Rule); ok {
-		r0 = returnFunc(name, version)
+		r0 = returnFunc(s, s1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*dto.Rule)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = returnFunc(name, version)
+		r1 = returnFunc(s, s1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -466,13 +466,13 @@ type MockRuleRepository_GetRule_Call struct {
 }
 
 // GetRule is a helper method to define mock.On call
-//   - name string
-//   - version string
-func (_e *MockRuleRepository_Expecter) GetRule(name interface{}, version interface{}) *MockRuleRepository_GetRule_Call {
-	return &MockRuleRepository_GetRule_Call{Call: _e.mock.On("GetRule", name, version)}
+//   - s string
+//   - s1 string
+func (_e *MockRuleRepository_Expecter) GetRule(s interface{}, s1 interface{}) *MockRuleRepository_GetRule_Call {
+	return &MockRuleRepository_GetRule_Call{Call: _e.mock.On("GetRule", s, s1)}
 }
 
-func (_c *MockRuleRepository_GetRule_Call) Run(run func(name string, version string)) *MockRuleRepository_GetRule_Call {
+func (_c *MockRuleRepository_GetRule_Call) Run(run func(s string, s1 string)) *MockRuleRepository_GetRule_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -495,13 +495,13 @@ func (_c *MockRuleRepository_GetRule_Call) Return(rule *dto.Rule, err error) *Mo
 	return _c
 }
 
-func (_c *MockRuleRepository_GetRule_Call) RunAndReturn(run func(name string, version string) (*dto.Rule, error)) *MockRuleRepository_GetRule_Call {
+func (_c *MockRuleRepository_GetRule_Call) RunAndReturn(run func(s string, s1 string) (*dto.Rule, error)) *MockRuleRepository_GetRule_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockRuleRepository
-func (_mock *MockRuleRepository) SaveAll(rules *[]dto.Rule) error {
+func (_mock *MockRuleRepository) SaveAll(rules []dto.Rule) error {
 	ret := _mock.Called(rules)
 
 	if len(ret) == 0 {
@@ -509,7 +509,7 @@ func (_mock *MockRuleRepository) SaveAll(rules *[]dto.Rule) error {
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(*[]dto.Rule) error); ok {
+	if returnFunc, ok := ret.Get(0).(func([]dto.Rule) error); ok {
 		r0 = returnFunc(rules)
 	} else {
 		r0 = ret.Error(0)
@@ -523,16 +523,16 @@ type MockRuleRepository_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
-//   - rules *[]dto.Rule
+//   - rules []dto.Rule
 func (_e *MockRuleRepository_Expecter) SaveAll(rules interface{}) *MockRuleRepository_SaveAll_Call {
 	return &MockRuleRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", rules)}
 }
 
-func (_c *MockRuleRepository_SaveAll_Call) Run(run func(rules *[]dto.Rule)) *MockRuleRepository_SaveAll_Call {
+func (_c *MockRuleRepository_SaveAll_Call) Run(run func(rules []dto.Rule)) *MockRuleRepository_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 *[]dto.Rule
+		var arg0 []dto.Rule
 		if args[0] != nil {
-			arg0 = args[0].(*[]dto.Rule)
+			arg0 = args[0].([]dto.Rule)
 		}
 		run(
 			arg0,
@@ -546,7 +546,7 @@ func (_c *MockRuleRepository_SaveAll_Call) Return(err error) *MockRuleRepository
 	return _c
 }
 
-func (_c *MockRuleRepository_SaveAll_Call) RunAndReturn(run func(rules *[]dto.Rule) error) *MockRuleRepository_SaveAll_Call {
+func (_c *MockRuleRepository_SaveAll_Call) RunAndReturn(run func(rules []dto.Rule) error) *MockRuleRepository_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }

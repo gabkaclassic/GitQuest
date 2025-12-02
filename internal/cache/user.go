@@ -15,8 +15,8 @@ const (
 
 type UserCacheClient interface {
 	Save(context.Context, string) error
-	SaveAll(context.Context, *[]string) error
-	GetAll(context.Context) (*[]string, error)
+	SaveAll(context.Context, []string) error
+	GetAll(context.Context) ([]string, error)
 }
 
 type userCacheClient struct {
@@ -34,7 +34,7 @@ func NewUserCacheClient(storage *redis.Client) (UserCacheClient, error) {
 	}, nil
 }
 
-func (client *userCacheClient) SaveAll(ctx context.Context, users *[]string) error {
+func (client *userCacheClient) SaveAll(ctx context.Context, users []string) error {
 
 	if users == nil {
 		return errors.New("users cannot be nil")
@@ -42,7 +42,7 @@ func (client *userCacheClient) SaveAll(ctx context.Context, users *[]string) err
 
 	pipeline := client.storage.TxPipeline()
 
-	for _, user := range *users {
+	for _, user := range users {
 		key := fmt.Sprintf("%s:%s", userKeyPrefix, user)
 		pipeline.Set(ctx, key, user, 0)
 	}
@@ -62,7 +62,7 @@ func (client *userCacheClient) Save(ctx context.Context, user string) error {
 	return err
 }
 
-func (client *userCacheClient) GetAll(ctx context.Context) (*[]string, error) {
+func (client *userCacheClient) GetAll(ctx context.Context) ([]string, error) {
 	var users []string
 
 	keys, err := client.storage.Keys(ctx, allUsersKey).Result()
@@ -71,7 +71,7 @@ func (client *userCacheClient) GetAll(ctx context.Context) (*[]string, error) {
 	}
 
 	if len(keys) == 0 {
-		return &users, nil
+		return users, nil
 	}
 
 	values, err := client.storage.MGet(ctx, keys...).Result()
@@ -85,5 +85,5 @@ func (client *userCacheClient) GetAll(ctx context.Context) (*[]string, error) {
 		}
 	}
 
-	return &users, nil
+	return users, nil
 }

@@ -171,9 +171,9 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 		{
 			name: "no achievements generated",
 			setup: func(m mocks) {
-				m.userCache.On("GetAll", mock.Anything).Return(&[]string{user}, nil)
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{}, nil)
+					Return([]time.Time{}, nil)
 			},
 			rules:     []dto.Rule{rule},
 			expectErr: "",
@@ -181,9 +181,9 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 		{
 			name: "repository save error",
 			setup: func(m mocks) {
-				m.userCache.On("GetAll", mock.Anything).Return(&[]string{user}, nil)
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(errors.New("db error"))
 			},
@@ -193,9 +193,9 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 		{
 			name: "achievement cache save error",
 			setup: func(m mocks) {
-				m.userCache.On("GetAll", mock.Anything).Return(&[]string{user}, nil)
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(nil)
 				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(errors.New("cache error"))
@@ -206,9 +206,9 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 		{
 			name: "notification send error",
 			setup: func(m mocks) {
-				m.userCache.On("GetAll", mock.Anything).Return(&[]string{user}, nil)
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(nil)
 				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(nil)
@@ -220,9 +220,9 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 		{
 			name: "successful path",
 			setup: func(m mocks) {
-				m.userCache.On("GetAll", mock.Anything).Return(&[]string{user}, nil)
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(nil)
 				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(nil)
@@ -253,7 +253,7 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 				notificationService:    mockObjs.notificationSvc,
 			}
 
-			err := service.CheckForNewAchievements(context.Background(), &tt.rules)
+			err := service.CheckForNewAchievements(context.Background(), tt.rules)
 
 			if tt.expectErr == "" {
 				assert.NoError(t, err)
@@ -309,7 +309,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			name: "achievement exists in cache",
 			setup: func(m mocks) {
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(true, nil)
 			},
 			rules:       []dto.Rule{rule},
@@ -319,7 +319,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			name: "exists in all time",
 			setup: func(m mocks) {
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("ExistsInAllTime", mock.Anything).Return(true, nil)
 			},
@@ -330,7 +330,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			name: "successful achievement generation",
 			setup: func(m mocks) {
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
-					Return(&[]time.Time{time.Now()}, nil)
+					Return([]time.Time{time.Now()}, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil)
 			},
@@ -356,7 +356,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			}
 
 			out := make(chan dto.Achievement, 10)
-			err := service.processUserEvents(context.Background(), user, &tt.rules, out)
+			err := service.processUserEvents(context.Background(), user, tt.rules, out)
 			assert.NoError(t, err)
 			close(out)
 
@@ -399,7 +399,7 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 		{
 			name: "notify error",
 			setup: func(m mocks) {
-				m.repo.On("ReevalByRuleDiff", diff).Return(&[]string{"user1", "user2"}, nil)
+				m.repo.On("ReevalByRuleDiff", diff).Return([]string{"user1", "user2"}, nil)
 				m.notificationSvc.On("Notify", mock.Anything).Return(errors.New("notify error"))
 			},
 			expectErr: "notify error",
@@ -407,7 +407,7 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 		{
 			name: "successful path",
 			setup: func(m mocks) {
-				m.repo.On("ReevalByRuleDiff", diff).Return(&[]string{"user1"}, nil)
+				m.repo.On("ReevalByRuleDiff", diff).Return([]string{"user1"}, nil)
 				m.notificationSvc.On("Notify", mock.Anything).Return(nil)
 			},
 			expectErr: "",
@@ -502,7 +502,7 @@ func TestCheckStreak(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := checkStreak(&tt.timestamps, tt.days)
+			result := checkStreak(tt.timestamps, tt.days)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

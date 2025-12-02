@@ -18,8 +18,8 @@ const (
 
 type EventCacheClient interface {
 	CleanupOldEventsFromCache(context.Context) error
-	SaveNewEvents(context.Context, *[]dto.Event) (*[]string, error)
-	GetUserEventsTimestampsByTypeAndRange(context.Context, string, dto.EventType, time.Time, time.Time) (*[]time.Time, error)
+	SaveNewEvents(context.Context, []dto.Event) ([]string, error)
+	GetUserEventsTimestampsByTypeAndRange(context.Context, string, dto.EventType, time.Time, time.Time) ([]time.Time, error)
 }
 
 type eventCacheClient struct {
@@ -62,7 +62,7 @@ func (client *eventCacheClient) CleanupOldEventsFromCache(ctx context.Context) e
 	return nil
 }
 
-func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events *[]dto.Event) (*[]string, error) {
+func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events []dto.Event) ([]string, error) {
 
 	if events == nil {
 		return nil, errors.New("events cannot be nil")
@@ -71,7 +71,7 @@ func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events *[]dto
 	usersSet := make(map[string]bool)
 	users := make([]string, 0)
 	pipeline := client.storage.TxPipeline()
-	for _, event := range *events {
+	for _, event := range events {
 		pipeline.ZAdd(
 			ctx, fmt.Sprintf("%s:%s:%s", eventKeyPrefix, event.Actor, event.EventType),
 			redis.Z{
@@ -87,10 +87,10 @@ func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events *[]dto
 
 	_, err := pipeline.Exec(ctx)
 
-	return &users, err
+	return users, err
 }
 
-func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx context.Context, user string, eventType dto.EventType, startRange, endRange time.Time) (*[]time.Time, error) {
+func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx context.Context, user string, eventType dto.EventType, startRange, endRange time.Time) ([]time.Time, error) {
 	var timestamps []time.Time
 
 	var minScore, maxScore string
@@ -122,5 +122,5 @@ func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx contex
 		timestamps = append(timestamps, time.Unix(unixTime, 0))
 	}
 
-	return &timestamps, nil
+	return timestamps, nil
 }
