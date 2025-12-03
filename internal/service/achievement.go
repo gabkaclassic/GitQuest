@@ -134,10 +134,11 @@ func (service *achievementService) CheckForNewAchievements(
 		}
 
 		notifications[ind] = dto.Notification{
-			ID:       notificationID,
-			User:     achievement.User,
-			Reward:   achievement.Reward,
-			RuleName: achievement.RuleName,
+			ID:              notificationID,
+			User:            achievement.User,
+			Reward:          achievement.Reward,
+			RuleName:        achievement.RuleName,
+			RuleDescription: achievement.RuleDescription,
 		}
 	}
 
@@ -174,12 +175,13 @@ func (service *achievementService) processUserEvents(
 		}
 
 		achievement := dto.Achievement{
-			User:        user,
-			RuleName:    rule.Name,
-			RuleVersion: rule.Version,
-			Reward:      rule.Reward,
-			StartRange:  startRange,
-			EndRange:    now,
+			User:            user,
+			RuleName:        rule.Name,
+			RuleVersion:     rule.Version,
+			RuleDescription: rule.Description,
+			Reward:          rule.Reward,
+			StartRange:      startRange,
+			EndRange:        now,
 		}
 
 		exists, err := service.achievementCacheClient.AchievementExists(ctx, &achievement)
@@ -255,10 +257,11 @@ func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
 		}
 
 		notifications[ind] = dto.Notification{
-			ID:       notificationID,
-			User:     user,
-			Reward:   diff.RewardDiff,
-			RuleName: diff.Name,
+			ID:              notificationID,
+			User:            user,
+			Reward:          diff.RewardDiff,
+			RuleName:        diff.Name,
+			RuleDescription: fmt.Sprintf("Reward changed by %d", diff.RewardDiff),
 		}
 	}
 
