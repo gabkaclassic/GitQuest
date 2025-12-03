@@ -390,6 +390,52 @@ func (_m *MockRuleService) EXPECT() *MockRuleService_Expecter {
 	return &MockRuleService_Expecter{mock: &_m.Mock}
 }
 
+// GetAll provides a mock function for the type MockRuleService
+func (_mock *MockRuleService) GetAll() []dto.Rule {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []dto.Rule
+	if returnFunc, ok := ret.Get(0).(func() []dto.Rule); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]dto.Rule)
+		}
+	}
+	return r0
+}
+
+// MockRuleService_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type MockRuleService_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+func (_e *MockRuleService_Expecter) GetAll() *MockRuleService_GetAll_Call {
+	return &MockRuleService_GetAll_Call{Call: _e.mock.On("GetAll")}
+}
+
+func (_c *MockRuleService_GetAll_Call) Run(run func()) *MockRuleService_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockRuleService_GetAll_Call) Return(rules []dto.Rule) *MockRuleService_GetAll_Call {
+	_c.Call.Return(rules)
+	return _c
+}
+
+func (_c *MockRuleService_GetAll_Call) RunAndReturn(run func() []dto.Rule) *MockRuleService_GetAll_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRulesDiffs provides a mock function for the type MockRuleService
 func (_mock *MockRuleService) GetRulesDiffs(rules []dto.Rule) ([]dto.RuleDiff, error) {
 	ret := _mock.Called(rules)

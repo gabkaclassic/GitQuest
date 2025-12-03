@@ -36,7 +36,7 @@ func TestNewRuleService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service, err := NewRuleService(tt.repository)
+			service, err := NewRuleService(tt.repository, []dto.Rule{})
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -172,6 +172,40 @@ func TestRuleService_GetRulesDiffs(t *testing.T) {
 			}
 
 			mockObjs.repo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestRuleService_GetAll(t *testing.T) {
+	repo := new(repository.MockRuleRepository)
+
+	tests := []struct {
+		name  string
+		rules []dto.Rule
+		want  []dto.Rule
+	}{
+		{
+			name:  "nil",
+			rules: nil,
+			want:  nil,
+		},
+		{
+			name:  "empty",
+			rules: []dto.Rule{},
+			want:  []dto.Rule{},
+		},
+		{
+			name:  "not empty",
+			rules: []dto.Rule{{Name: "1"}, {Name: "2"}},
+			want:  []dto.Rule{{Name: "1"}, {Name: "2"}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := &ruleService{repository: repo, rules: tt.rules}
+			got := service.GetAll()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -13,15 +13,15 @@ type (
 	TimeRange time.Duration
 
 	Rule struct {
-		Name        string    `yaml:"name"`
-		Description string    `yaml:"description"`
-		EventType   EventType `yaml:"event_type"`
-		Window      TimeRange `yaml:"window"`
-		Count       int       `yaml:"count"`
-		Condition   Condition `yaml:"condition"`
-		Streak      bool      `yaml:"streak"`
-		Reward      int       `yaml:"reward"`
-		Version     string    `yaml:"-"`
+		Name        string    `yaml:"name" json:"name"`
+		Description string    `yaml:"description" json:"description"`
+		EventType   EventType `yaml:"event_type" json:"eventType"`
+		Window      TimeRange `yaml:"window" json:"window"`
+		Count       int       `yaml:"count" json:"count"`
+		Condition   Condition `yaml:"condition" json:"condition"`
+		Streak      bool      `yaml:"streak" json:"streak"`
+		Reward      int       `yaml:"reward" json:"reward"`
+		Version     string    `yaml:"-" json:"-"`
 	}
 	RuleDiff struct {
 		Name       string

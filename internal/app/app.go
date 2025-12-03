@@ -12,6 +12,7 @@ import (
 
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/config"
+	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/gabkaclassic/GitQuest/internal/handler"
 	"github.com/gabkaclassic/GitQuest/internal/job"
 	"github.com/gabkaclassic/GitQuest/internal/repository"
@@ -70,7 +71,7 @@ func NewApp() (*App, error) {
 	}
 
 	slog.Debug("Initialize services...")
-	services, err := initializeServices(&cfg.Notification, repos, cacheClients)
+	services, err := initializeServices(&cfg.Notification, repos, cacheClients, cfg.Rules.Rules)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to initialize services: %w", err)
@@ -244,7 +245,7 @@ func initializeRepositories(connection *sql.DB) (*repositoriesList, error) {
 }
 
 func initializeServices(cfg *config.Notification, repositories *repositoriesList,
-	cacheClients *cacheClientsList) (*servicesList, error) {
+	cacheClients *cacheClientsList, rules []dto.Rule) (*servicesList, error) {
 
 	eventService, err := service.NewEventService(
 		repositories.EventRepository,
@@ -260,7 +261,7 @@ func initializeServices(cfg *config.Notification, repositories *repositoriesList
 		return nil, fmt.Errorf("failed to create user service: %w", err)
 	}
 
-	ruleService, err := service.NewRuleService(repositories.RuleRepository)
+	ruleService, err := service.NewRuleService(repositories.RuleRepository, rules)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rule service: %w", err)
 	}
@@ -289,12 +290,18 @@ func initializeServices(cfg *config.Notification, repositories *repositoriesList
 }
 
 func setupRouter(services *servicesList) (http.Handler, error) {
-	eventsHandler, err := handler.NewEventHandler(services.EventService)
+	eventHandler, err := handler.NewEventHandler(services.EventService)
+	if err != nil {
+		return nil, err
+	}
+
+	ruleHandler, err := handler.NewRuleHandler(services.RuleService)
 	if err != nil {
 		return nil, err
 	}
 
 	return handler.SetupRouter(&handler.RouterConfiguration{
-		EventHandler: eventsHandler,
-	}), nil
+		EventHandler: eventHandler,
+		RuleHandler:  ruleHandler,
+	})
 }

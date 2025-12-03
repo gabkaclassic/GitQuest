@@ -12,13 +12,15 @@ import (
 type RuleService interface {
 	SaveAll([]dto.Rule) error
 	GetRulesDiffs([]dto.Rule) ([]dto.RuleDiff, error)
+	GetAll() []dto.Rule
 }
 
 type ruleService struct {
 	repository repository.RuleRepository
+	rules      []dto.Rule
 }
 
-func NewRuleService(repository repository.RuleRepository) (RuleService, error) {
+func NewRuleService(repository repository.RuleRepository, rules []dto.Rule) (RuleService, error) {
 
 	if repository == nil {
 		return nil, errors.New("create new rule service failed: repository is nil")
@@ -26,7 +28,13 @@ func NewRuleService(repository repository.RuleRepository) (RuleService, error) {
 
 	return &ruleService{
 		repository: repository,
+		rules:      rules,
 	}, nil
+}
+
+func (service *ruleService) GetAll() []dto.Rule {
+
+	return service.rules
 }
 
 func (service *ruleService) SaveAll(rules []dto.Rule) error {
