@@ -132,14 +132,14 @@ func TestEventService_SaveAll(t *testing.T) {
 		{
 			name: "repository error",
 			setup: func(m mocks) {
-				m.repo.On("SaveAll", events).Return(errors.New("db error"))
+				m.repo.On("SaveAll", mock.Anything, events).Return(errors.New("db error"))
 			},
 			expectErr: "save events error",
 		},
 		{
 			name: "event cache error",
 			setup: func(m mocks) {
-				m.repo.On("SaveAll", events).Return(nil)
+				m.repo.On("SaveAll", mock.Anything, events).Return(nil)
 				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return(nil, errors.New("cache error"))
 			},
 			expectErr: "cache operations error",
@@ -147,7 +147,7 @@ func TestEventService_SaveAll(t *testing.T) {
 		{
 			name: "user cache error",
 			setup: func(m mocks) {
-				m.repo.On("SaveAll", events).Return(nil)
+				m.repo.On("SaveAll", mock.Anything, events).Return(nil)
 				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return([]string{"user1"}, nil)
 				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(errors.New("user cache error"))
 			},
@@ -156,7 +156,7 @@ func TestEventService_SaveAll(t *testing.T) {
 		{
 			name: "successful save",
 			setup: func(m mocks) {
-				m.repo.On("SaveAll", events).Return(nil)
+				m.repo.On("SaveAll", mock.Anything, events).Return(nil)
 				m.eventCache.On("SaveNewEvents", mock.Anything, events).Return([]string{"user1"}, nil)
 				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(nil)
 			},
@@ -210,14 +210,14 @@ func TestEventService_LoadUsersToCache(t *testing.T) {
 		{
 			name: "repository error",
 			setup: func(m mocks) {
-				m.repo.On("GetAllUsersWithEvents").Return(nil, errors.New("db error"))
+				m.repo.On("GetAllUsersWithEvents", mock.Anything).Return(nil, errors.New("db error"))
 			},
 			expectErr: "db error",
 		},
 		{
 			name: "user cache error",
 			setup: func(m mocks) {
-				m.repo.On("GetAllUsersWithEvents").Return([]string{"user1"}, nil)
+				m.repo.On("GetAllUsersWithEvents", mock.Anything).Return([]string{"user1"}, nil)
 				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(errors.New("cache error"))
 			},
 			expectErr: "cache error",
@@ -225,7 +225,7 @@ func TestEventService_LoadUsersToCache(t *testing.T) {
 		{
 			name: "successful path",
 			setup: func(m mocks) {
-				m.repo.On("GetAllUsersWithEvents").Return([]string{"user1"}, nil)
+				m.repo.On("GetAllUsersWithEvents", mock.Anything).Return([]string{"user1"}, nil)
 				m.userCache.On("SaveAll", mock.Anything, []string{"user1"}).Return(nil)
 			},
 			expectErr: "",

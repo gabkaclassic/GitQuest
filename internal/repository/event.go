@@ -1,16 +1,18 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+
 	"github.com/lib/pq"
 
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 )
 
 type EventRepository interface {
-	SaveAll([]dto.Event) error
-	GetAllUsersWithEvents() ([]string, error)
+	SaveAll(context.Context, []dto.Event) error
+	GetAllUsersWithEvents(context.Context) ([]string, error)
 }
 
 type eventRepository struct {
@@ -28,7 +30,7 @@ func NewEventRepository(storage *sql.DB) (EventRepository, error) {
 	}, nil
 }
 
-func (repository *eventRepository) SaveAll(events []dto.Event) error {
+func (repository *eventRepository) SaveAll(ctx context.Context, events []dto.Event) error {
 
 	if events == nil {
 		return errors.New("events cannot be nil")
@@ -41,20 +43,20 @@ func (repository *eventRepository) SaveAll(events []dto.Event) error {
 		}
 		defer tx.Rollback()
 
-		stmt, err := tx.Prepare(pq.CopyIn("events", "id", "actor", "timestamp", "type"))
+		stmt, err := tx.PrepareContext(ctx, pq.CopyIn("events", "id", "actor", "timestamp", "type"))
 
 		if err != nil {
 			return err
 		}
 
 		for _, event := range events {
-			_, err = stmt.Exec(event.ID, event.Actor, event.Timestamp, event.EventType)
+			_, err = stmt.ExecContext(ctx, event.ID, event.Actor, event.Timestamp, event.EventType)
 			if err != nil {
 				return err
 			}
 		}
 
-		_, err = stmt.Exec()
+		_, err = stmt.ExecContext(ctx)
 
 		if err != nil {
 			return err
@@ -69,10 +71,10 @@ func (repository *eventRepository) SaveAll(events []dto.Event) error {
 	})
 }
 
-func (repository *eventRepository) GetAllUsersWithEvents() ([]string, error) {
+func (repository *eventRepository) GetAllUsersWithEvents(ctx context.Context) ([]string, error) {
 	users := make([]string, 0)
 	err := executeWithRetry(func() error {
-		rows, err := repository.storage.Query("SELECT actor DISTINCT FROM events")
+		rows, err := repository.storage.QueryContext(ctx, "SELECT actor DISTINCT FROM events")
 		if err != nil {
 			return err
 		}

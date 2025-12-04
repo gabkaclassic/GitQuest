@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"database/sql"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/lib/pq"
@@ -795,7 +796,7 @@ func TestAchievementRepository_GetByUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockFn()
 
-			out, err := repo.GetByUser(user)
+			out, err := repo.GetByUser(t.Context(), user)
 
 			if tt.expectError {
 				assert.Error(t, err)

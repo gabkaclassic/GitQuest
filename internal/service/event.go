@@ -45,7 +45,7 @@ func NewEventService(repository repository.EventRepository, eventCacheClient cac
 
 func (service *eventService) SaveAll(ctx context.Context, events []dto.Event) *api.APIError {
 
-	err := service.repository.SaveAll(events)
+	err := service.repository.SaveAll(ctx, events)
 
 	if err != nil {
 		return api.Internal("save events error", err)
@@ -68,7 +68,7 @@ func (service *eventService) SaveAll(ctx context.Context, events []dto.Event) *a
 }
 
 func (service *eventService) LoadUsersToCache(ctx context.Context) error {
-	users, err := service.repository.GetAllUsersWithEvents()
+	users, err := service.repository.GetAllUsersWithEvents(ctx)
 
 	if err != nil {
 		return err

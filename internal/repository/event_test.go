@@ -189,7 +189,7 @@ func TestEventRepository_SaveAll(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockFn()
-			err := repo.SaveAll(tt.input)
+			err := repo.SaveAll(t.Context(), tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -249,7 +249,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockFn()
-			result, err := repo.GetAllUsersWithEvents()
+			result, err := repo.GetAllUsersWithEvents(t.Context())
 
 			if tt.expectError {
 				assert.Error(t, err)

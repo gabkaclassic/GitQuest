@@ -1,14 +1,16 @@
 package handler
 
 import (
-	"github.com/gabkaclassic/GitQuest/internal/dto"
-	"github.com/gabkaclassic/GitQuest/internal/service"
-	api "github.com/gabkaclassic/metrics/pkg/error"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/gabkaclassic/GitQuest/internal/dto"
+	"github.com/gabkaclassic/GitQuest/internal/service"
+	api "github.com/gabkaclassic/metrics/pkg/error"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewAchievementHandler(t *testing.T) {
@@ -70,7 +72,7 @@ func TestAchievementHandler_GetByUser(t *testing.T) {
 			name: "service returns error",
 			path: "/achievements/user1",
 			setup: func(m mocks) {
-				m.service.On("GetSummaryByUser", "user1").
+				m.service.On("GetSummaryByUser", mock.Anything, "user1").
 					Return(nil, api.BadRequest("fail"))
 			},
 			expectedCode: http.StatusBadRequest,
@@ -80,7 +82,7 @@ func TestAchievementHandler_GetByUser(t *testing.T) {
 			name: "service returns summary",
 			path: "/achievements/user1",
 			setup: func(m mocks) {
-				m.service.On("GetSummaryByUser", "user1").
+				m.service.On("GetSummaryByUser", mock.Anything, "user1").
 					Return(&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{
 							{RuleName: "rule1", Reward: 10},
@@ -95,7 +97,7 @@ func TestAchievementHandler_GetByUser(t *testing.T) {
 			name: "encode fails (writer returns error)",
 			path: "/achievements/user1",
 			setup: func(m mocks) {
-				m.service.On("GetSummaryByUser", "user1").
+				m.service.On("GetSummaryByUser", mock.Anything, "user1").
 					Return(&dto.AchievementsSummary{}, nil)
 			},
 			expectedCode: http.StatusOK,

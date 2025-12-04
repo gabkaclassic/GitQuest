@@ -98,8 +98,8 @@ func (_c *MockAchievementService_CheckForNewAchievements_Call) RunAndReturn(run 
 }
 
 // GetSummaryByUser provides a mock function for the type MockAchievementService
-func (_mock *MockAchievementService) GetSummaryByUser(s string) (*dto.AchievementsSummary, *api.APIError) {
-	ret := _mock.Called(s)
+func (_mock *MockAchievementService) GetSummaryByUser(context1 context.Context, s string) (*dto.AchievementsSummary, *api.APIError) {
+	ret := _mock.Called(context1, s)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetSummaryByUser")
@@ -107,18 +107,18 @@ func (_mock *MockAchievementService) GetSummaryByUser(s string) (*dto.Achievemen
 
 	var r0 *dto.AchievementsSummary
 	var r1 *api.APIError
-	if returnFunc, ok := ret.Get(0).(func(string) (*dto.AchievementsSummary, *api.APIError)); ok {
-		return returnFunc(s)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*dto.AchievementsSummary, *api.APIError)); ok {
+		return returnFunc(context1, s)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) *dto.AchievementsSummary); ok {
-		r0 = returnFunc(s)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *dto.AchievementsSummary); ok {
+		r0 = returnFunc(context1, s)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*dto.AchievementsSummary)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(string) *api.APIError); ok {
-		r1 = returnFunc(s)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) *api.APIError); ok {
+		r1 = returnFunc(context1, s)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*api.APIError)
@@ -133,19 +133,25 @@ type MockAchievementService_GetSummaryByUser_Call struct {
 }
 
 // GetSummaryByUser is a helper method to define mock.On call
+//   - context1 context.Context
 //   - s string
-func (_e *MockAchievementService_Expecter) GetSummaryByUser(s interface{}) *MockAchievementService_GetSummaryByUser_Call {
-	return &MockAchievementService_GetSummaryByUser_Call{Call: _e.mock.On("GetSummaryByUser", s)}
+func (_e *MockAchievementService_Expecter) GetSummaryByUser(context1 interface{}, s interface{}) *MockAchievementService_GetSummaryByUser_Call {
+	return &MockAchievementService_GetSummaryByUser_Call{Call: _e.mock.On("GetSummaryByUser", context1, s)}
 }
 
-func (_c *MockAchievementService_GetSummaryByUser_Call) Run(run func(s string)) *MockAchievementService_GetSummaryByUser_Call {
+func (_c *MockAchievementService_GetSummaryByUser_Call) Run(run func(context1 context.Context, s string)) *MockAchievementService_GetSummaryByUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(string)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -156,7 +162,7 @@ func (_c *MockAchievementService_GetSummaryByUser_Call) Return(achievementsSumma
 	return _c
 }
 
-func (_c *MockAchievementService_GetSummaryByUser_Call) RunAndReturn(run func(s string) (*dto.AchievementsSummary, *api.APIError)) *MockAchievementService_GetSummaryByUser_Call {
+func (_c *MockAchievementService_GetSummaryByUser_Call) RunAndReturn(run func(context1 context.Context, s string) (*dto.AchievementsSummary, *api.APIError)) *MockAchievementService_GetSummaryByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

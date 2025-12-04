@@ -5,6 +5,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -98,8 +100,8 @@ func (_c *MockAchievementRepository_ExistsInAllTime_Call) RunAndReturn(run func(
 }
 
 // GetByUser provides a mock function for the type MockAchievementRepository
-func (_mock *MockAchievementRepository) GetByUser(s string) (*dto.AchievementsSummary, error) {
-	ret := _mock.Called(s)
+func (_mock *MockAchievementRepository) GetByUser(context1 context.Context, s string) (*dto.AchievementsSummary, error) {
+	ret := _mock.Called(context1, s)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByUser")
@@ -107,18 +109,18 @@ func (_mock *MockAchievementRepository) GetByUser(s string) (*dto.AchievementsSu
 
 	var r0 *dto.AchievementsSummary
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (*dto.AchievementsSummary, error)); ok {
-		return returnFunc(s)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*dto.AchievementsSummary, error)); ok {
+		return returnFunc(context1, s)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) *dto.AchievementsSummary); ok {
-		r0 = returnFunc(s)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *dto.AchievementsSummary); ok {
+		r0 = returnFunc(context1, s)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*dto.AchievementsSummary)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(s)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(context1, s)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -131,19 +133,25 @@ type MockAchievementRepository_GetByUser_Call struct {
 }
 
 // GetByUser is a helper method to define mock.On call
+//   - context1 context.Context
 //   - s string
-func (_e *MockAchievementRepository_Expecter) GetByUser(s interface{}) *MockAchievementRepository_GetByUser_Call {
-	return &MockAchievementRepository_GetByUser_Call{Call: _e.mock.On("GetByUser", s)}
+func (_e *MockAchievementRepository_Expecter) GetByUser(context1 interface{}, s interface{}) *MockAchievementRepository_GetByUser_Call {
+	return &MockAchievementRepository_GetByUser_Call{Call: _e.mock.On("GetByUser", context1, s)}
 }
 
-func (_c *MockAchievementRepository_GetByUser_Call) Run(run func(s string)) *MockAchievementRepository_GetByUser_Call {
+func (_c *MockAchievementRepository_GetByUser_Call) Run(run func(context1 context.Context, s string)) *MockAchievementRepository_GetByUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(string)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -154,7 +162,7 @@ func (_c *MockAchievementRepository_GetByUser_Call) Return(achievementsSummary *
 	return _c
 }
 
-func (_c *MockAchievementRepository_GetByUser_Call) RunAndReturn(run func(s string) (*dto.AchievementsSummary, error)) *MockAchievementRepository_GetByUser_Call {
+func (_c *MockAchievementRepository_GetByUser_Call) RunAndReturn(run func(context1 context.Context, s string) (*dto.AchievementsSummary, error)) *MockAchievementRepository_GetByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -300,8 +308,8 @@ func (_m *MockEventRepository) EXPECT() *MockEventRepository_Expecter {
 }
 
 // GetAllUsersWithEvents provides a mock function for the type MockEventRepository
-func (_mock *MockEventRepository) GetAllUsersWithEvents() ([]string, error) {
-	ret := _mock.Called()
+func (_mock *MockEventRepository) GetAllUsersWithEvents(context1 context.Context) ([]string, error) {
+	ret := _mock.Called(context1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllUsersWithEvents")
@@ -309,18 +317,18 @@ func (_mock *MockEventRepository) GetAllUsersWithEvents() ([]string, error) {
 
 	var r0 []string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() ([]string, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]string, error)); ok {
+		return returnFunc(context1)
 	}
-	if returnFunc, ok := ret.Get(0).(func() []string); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []string); ok {
+		r0 = returnFunc(context1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(context1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -333,13 +341,20 @@ type MockEventRepository_GetAllUsersWithEvents_Call struct {
 }
 
 // GetAllUsersWithEvents is a helper method to define mock.On call
-func (_e *MockEventRepository_Expecter) GetAllUsersWithEvents() *MockEventRepository_GetAllUsersWithEvents_Call {
-	return &MockEventRepository_GetAllUsersWithEvents_Call{Call: _e.mock.On("GetAllUsersWithEvents")}
+//   - context1 context.Context
+func (_e *MockEventRepository_Expecter) GetAllUsersWithEvents(context1 interface{}) *MockEventRepository_GetAllUsersWithEvents_Call {
+	return &MockEventRepository_GetAllUsersWithEvents_Call{Call: _e.mock.On("GetAllUsersWithEvents", context1)}
 }
 
-func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Run(run func()) *MockEventRepository_GetAllUsersWithEvents_Call {
+func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Run(run func(context1 context.Context)) *MockEventRepository_GetAllUsersWithEvents_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
@@ -349,22 +364,22 @@ func (_c *MockEventRepository_GetAllUsersWithEvents_Call) Return(strings []strin
 	return _c
 }
 
-func (_c *MockEventRepository_GetAllUsersWithEvents_Call) RunAndReturn(run func() ([]string, error)) *MockEventRepository_GetAllUsersWithEvents_Call {
+func (_c *MockEventRepository_GetAllUsersWithEvents_Call) RunAndReturn(run func(context1 context.Context) ([]string, error)) *MockEventRepository_GetAllUsersWithEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveAll provides a mock function for the type MockEventRepository
-func (_mock *MockEventRepository) SaveAll(events []dto.Event) error {
-	ret := _mock.Called(events)
+func (_mock *MockEventRepository) SaveAll(context1 context.Context, events []dto.Event) error {
+	ret := _mock.Called(context1, events)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SaveAll")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func([]dto.Event) error); ok {
-		r0 = returnFunc(events)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []dto.Event) error); ok {
+		r0 = returnFunc(context1, events)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -377,19 +392,25 @@ type MockEventRepository_SaveAll_Call struct {
 }
 
 // SaveAll is a helper method to define mock.On call
+//   - context1 context.Context
 //   - events []dto.Event
-func (_e *MockEventRepository_Expecter) SaveAll(events interface{}) *MockEventRepository_SaveAll_Call {
-	return &MockEventRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", events)}
+func (_e *MockEventRepository_Expecter) SaveAll(context1 interface{}, events interface{}) *MockEventRepository_SaveAll_Call {
+	return &MockEventRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, events)}
 }
 
-func (_c *MockEventRepository_SaveAll_Call) Run(run func(events []dto.Event)) *MockEventRepository_SaveAll_Call {
+func (_c *MockEventRepository_SaveAll_Call) Run(run func(context1 context.Context, events []dto.Event)) *MockEventRepository_SaveAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 []dto.Event
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].([]dto.Event)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []dto.Event
+		if args[1] != nil {
+			arg1 = args[1].([]dto.Event)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -400,7 +421,7 @@ func (_c *MockEventRepository_SaveAll_Call) Return(err error) *MockEventReposito
 	return _c
 }
 
-func (_c *MockEventRepository_SaveAll_Call) RunAndReturn(run func(events []dto.Event) error) *MockEventRepository_SaveAll_Call {
+func (_c *MockEventRepository_SaveAll_Call) RunAndReturn(run func(context1 context.Context, events []dto.Event) error) *MockEventRepository_SaveAll_Call {
 	_c.Call.Return(run)
 	return _c
 }

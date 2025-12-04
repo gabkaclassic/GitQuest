@@ -526,7 +526,7 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			name: "ok",
 			setup: func(m mocks) {
 				m.repo.
-					On("GetByUser", user).
+					On("GetByUser", mock.Anything, user).
 					Return(&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{
 							{RuleName: "r1", Reward: 1},
@@ -545,7 +545,7 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			name: "internal",
 			setup: func(m mocks) {
 				m.repo.
-					On("GetByUser", user).
+					On("GetByUser", mock.Anything, user).
 					Return(nil, errors.New("db err"))
 			},
 			expectedErr: api.Internal("Get achievements for user error", errors.New("db err")),
@@ -560,7 +560,7 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 
 			svc := &achievementService{repository: mockRepo}
 
-			out, err := svc.GetSummaryByUser(user)
+			out, err := svc.GetSummaryByUser(t.Context(), user)
 
 			if tt.expectedErr != nil {
 				assert.Nil(t, out)
