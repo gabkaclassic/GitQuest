@@ -23,7 +23,7 @@ const (
 type AchievementService interface {
 	CheckForNewAchievements(context.Context, []dto.Rule) error
 	ReevalByDiffs([]dto.RuleDiff) error
-	GetSummaryByUser(string) (*dto.AchievementsSummary, *api.APIError)
+	GetSummaryByUser(context.Context, string) (*dto.AchievementsSummary, *api.APIError)
 }
 
 type achievementService struct {
@@ -78,9 +78,9 @@ func NewAchievementService(
 	}, nil
 }
 
-func (service *achievementService) GetSummaryByUser(user string) (*dto.AchievementsSummary, *api.APIError) {
+func (service *achievementService) GetSummaryByUser(ctx context.Context, user string) (*dto.AchievementsSummary, *api.APIError) {
 
-	summary, err := service.repository.GetByUser(user)
+	summary, err := service.repository.GetByUser(ctx, user)
 
 	if err != nil {
 		if storage.IsNotFoundError(err) {

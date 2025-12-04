@@ -27,7 +27,7 @@ func (handler *AchievementHandler) GetByUser(w http.ResponseWriter, r *http.Requ
 
 	user := r.PathValue("user")
 
-	summary, getSummaryErr := handler.service.GetSummaryByUser(user)
+	summary, getSummaryErr := handler.service.GetSummaryByUser(r.Context(), user)
 
 	if getSummaryErr != nil {
 		api.RespondError(w, getSummaryErr)

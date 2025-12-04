@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+
 	"github.com/lib/pq"
 
 	"github.com/gabkaclassic/GitQuest/internal/dto"
@@ -12,7 +14,7 @@ type AchievementRepository interface {
 	SaveAll([]dto.Achievement) error
 	ExistsInAllTime(*dto.Achievement) (bool, error)
 	ReevalByRuleDiff(*dto.RuleDiff) ([]string, error)
-	GetByUser(string) (*dto.AchievementsSummary, error)
+	GetByUser(context.Context, string) (*dto.AchievementsSummary, error)
 }
 
 type achievementRepository struct {
@@ -30,9 +32,10 @@ func NewAchievementRepository(storage *sql.DB) (AchievementRepository, error) {
 	}, nil
 }
 
-func (repository *achievementRepository) GetByUser(user string) (*dto.AchievementsSummary, error) {
+func (repository *achievementRepository) GetByUser(ctx context.Context, user string) (*dto.AchievementsSummary, error) {
 
-	rows, err := repository.storage.Query(
+	rows, err := repository.storage.QueryContext(
+		ctx,
 		`SELECT rule_name, reward, SUM(reward) OVER() AS total FROM achievements WHERE "user" = $1`,
 		user,
 	)
