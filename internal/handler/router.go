@@ -10,8 +10,9 @@ import (
 )
 
 type RouterConfiguration struct {
-	EventHandler *EventHandler
-	RuleHandler  *RuleHandler
+	EventHandler       *EventHandler
+	RuleHandler        *RuleHandler
+	AchievementHandler *AchievementHandler
 }
 
 func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
@@ -22,6 +23,10 @@ func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
 
 	if config.RuleHandler == nil {
 		return nil, errors.New("setup router error: rule handler is nil")
+	}
+
+	if config.AchievementHandler == nil {
+		return nil, errors.New("setup router error: achievement handler is nil")
 	}
 
 	router := chi.NewRouter()
@@ -35,6 +40,7 @@ func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
 
 	setupEventRouter(router, config.EventHandler, middleware.Decompress())
 	setupRuleRouter(router, config.RuleHandler, middleware.Decompress())
+	setupAchievementRouter(router, config.AchievementHandler, middleware.Decompress())
 
 	return router, nil
 }
@@ -69,6 +75,26 @@ func setupRuleRouter(
 		"/rule",
 		middleware.Wrap(
 			http.HandlerFunc(handler.GetAll),
+			middleware.RequireContentType(middleware.JSON),
+			middleware.Compress(map[middleware.ContentType]middleware.CompressType{
+				middleware.JSON: middleware.GZIP,
+			}),
+			middleware.WithContentType(middleware.JSON),
+			decompressMiddleware,
+		),
+	)
+}
+
+func setupAchievementRouter(
+	router *chi.Mux,
+	handler *AchievementHandler,
+	decompressMiddleware func(handler http.Handler) http.Handler,
+) {
+	// Achievements
+	router.Get(
+		"/achievement/{user}",
+		middleware.Wrap(
+			http.HandlerFunc(handler.GetByUser),
 			middleware.RequireContentType(middleware.JSON),
 			middleware.Compress(map[middleware.ContentType]middleware.CompressType{
 				middleware.JSON: middleware.GZIP,

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	api "github.com/gabkaclassic/metrics/pkg/error"
 	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
@@ -504,6 +505,74 @@ func TestCheckStreak(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := checkStreak(tt.timestamps, tt.days)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestAchievementService_GetSummaryByUser(t *testing.T) {
+	user := "u"
+
+	type mocks struct {
+		repo *repository.MockAchievementRepository
+	}
+
+	tests := []struct {
+		name        string
+		setup       func(m mocks)
+		expected    *dto.AchievementsSummary
+		expectedErr *api.APIError
+	}{
+		{
+			name: "ok",
+			setup: func(m mocks) {
+				m.repo.
+					On("GetByUser", user).
+					Return(&dto.AchievementsSummary{
+						Achievements: []dto.AchievementInfo{
+							{RuleName: "r1", Reward: 1},
+							{RuleName: "r2", Reward: 2},
+						},
+					}, nil)
+			},
+			expected: &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{
+					{RuleName: "r1", Reward: 1},
+					{RuleName: "r2", Reward: 2},
+				},
+			},
+		},
+		{
+			name: "internal",
+			setup: func(m mocks) {
+				m.repo.
+					On("GetByUser", user).
+					Return(nil, errors.New("db err"))
+			},
+			expectedErr: api.Internal("Get achievements for user error", errors.New("db err")),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(repository.MockAchievementRepository)
+
+			tt.setup(mocks{repo: mockRepo})
+
+			svc := &achievementService{repository: mockRepo}
+
+			out, err := svc.GetSummaryByUser(user)
+
+			if tt.expectedErr != nil {
+				assert.Nil(t, out)
+				assert.NotNil(t, err)
+				mockRepo.AssertExpectations(t)
+				return
+			}
+
+			assert.Nil(t, err)
+			assert.Equal(t, tt.expected, out)
+
+			mockRepo.AssertExpectations(t)
 		})
 	}
 }

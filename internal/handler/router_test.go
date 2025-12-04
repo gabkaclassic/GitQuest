@@ -15,8 +15,9 @@ func TestSetupRouter(t *testing.T) {
 		{
 			name: "nil event handler",
 			cfg: &RouterConfiguration{
-				EventHandler: nil,
-				RuleHandler:  &RuleHandler{},
+				EventHandler:       nil,
+				RuleHandler:        &RuleHandler{},
+				AchievementHandler: &AchievementHandler{},
 			},
 			expectErr:    true,
 			errSubstring: "event handler is nil",
@@ -24,17 +25,29 @@ func TestSetupRouter(t *testing.T) {
 		{
 			name: "nil rule handler",
 			cfg: &RouterConfiguration{
-				EventHandler: &EventHandler{},
-				RuleHandler:  nil,
+				EventHandler:       &EventHandler{},
+				RuleHandler:        nil,
+				AchievementHandler: &AchievementHandler{},
 			},
 			expectErr:    true,
 			errSubstring: "rule handler is nil",
 		},
 		{
+			name: "nil achievement handler",
+			cfg: &RouterConfiguration{
+				EventHandler:       &EventHandler{},
+				RuleHandler:        &RuleHandler{},
+				AchievementHandler: nil,
+			},
+			expectErr:    true,
+			errSubstring: "achievement handler is nil",
+		},
+		{
 			name: "ok",
 			cfg: &RouterConfiguration{
-				EventHandler: &EventHandler{},
-				RuleHandler:  &RuleHandler{},
+				EventHandler:       &EventHandler{},
+				RuleHandler:        &RuleHandler{},
+				AchievementHandler: &AchievementHandler{},
 			},
 			expectErr: false,
 		},

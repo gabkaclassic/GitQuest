@@ -97,6 +97,68 @@ func (_c *MockAchievementRepository_ExistsInAllTime_Call) RunAndReturn(run func(
 	return _c
 }
 
+// GetByUser provides a mock function for the type MockAchievementRepository
+func (_mock *MockAchievementRepository) GetByUser(s string) (*dto.AchievementsSummary, error) {
+	ret := _mock.Called(s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByUser")
+	}
+
+	var r0 *dto.AchievementsSummary
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (*dto.AchievementsSummary, error)); ok {
+		return returnFunc(s)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) *dto.AchievementsSummary); ok {
+		r0 = returnFunc(s)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.AchievementsSummary)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(s)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAchievementRepository_GetByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByUser'
+type MockAchievementRepository_GetByUser_Call struct {
+	*mock.Call
+}
+
+// GetByUser is a helper method to define mock.On call
+//   - s string
+func (_e *MockAchievementRepository_Expecter) GetByUser(s interface{}) *MockAchievementRepository_GetByUser_Call {
+	return &MockAchievementRepository_GetByUser_Call{Call: _e.mock.On("GetByUser", s)}
+}
+
+func (_c *MockAchievementRepository_GetByUser_Call) Run(run func(s string)) *MockAchievementRepository_GetByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAchievementRepository_GetByUser_Call) Return(achievementsSummary *dto.AchievementsSummary, err error) *MockAchievementRepository_GetByUser_Call {
+	_c.Call.Return(achievementsSummary, err)
+	return _c
+}
+
+func (_c *MockAchievementRepository_GetByUser_Call) RunAndReturn(run func(s string) (*dto.AchievementsSummary, error)) *MockAchievementRepository_GetByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReevalByRuleDiff provides a mock function for the type MockAchievementRepository
 func (_mock *MockAchievementRepository) ReevalByRuleDiff(ruleDiff *dto.RuleDiff) ([]string, error) {
 	ret := _mock.Called(ruleDiff)

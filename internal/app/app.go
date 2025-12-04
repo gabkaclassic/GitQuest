@@ -300,8 +300,14 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 		return nil, err
 	}
 
+	achievementHandler, err := handler.NewAchievementHandler(services.AchievementService)
+	if err != nil {
+		return nil, err
+	}
+
 	return handler.SetupRouter(&handler.RouterConfiguration{
-		EventHandler: eventHandler,
-		RuleHandler:  ruleHandler,
+		EventHandler:       eventHandler,
+		RuleHandler:        ruleHandler,
+		AchievementHandler: achievementHandler,
 	})
 }

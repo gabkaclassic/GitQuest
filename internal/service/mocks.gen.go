@@ -97,6 +97,70 @@ func (_c *MockAchievementService_CheckForNewAchievements_Call) RunAndReturn(run 
 	return _c
 }
 
+// GetSummaryByUser provides a mock function for the type MockAchievementService
+func (_mock *MockAchievementService) GetSummaryByUser(s string) (*dto.AchievementsSummary, *api.APIError) {
+	ret := _mock.Called(s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSummaryByUser")
+	}
+
+	var r0 *dto.AchievementsSummary
+	var r1 *api.APIError
+	if returnFunc, ok := ret.Get(0).(func(string) (*dto.AchievementsSummary, *api.APIError)); ok {
+		return returnFunc(s)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) *dto.AchievementsSummary); ok {
+		r0 = returnFunc(s)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.AchievementsSummary)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(string) *api.APIError); ok {
+		r1 = returnFunc(s)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*api.APIError)
+		}
+	}
+	return r0, r1
+}
+
+// MockAchievementService_GetSummaryByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSummaryByUser'
+type MockAchievementService_GetSummaryByUser_Call struct {
+	*mock.Call
+}
+
+// GetSummaryByUser is a helper method to define mock.On call
+//   - s string
+func (_e *MockAchievementService_Expecter) GetSummaryByUser(s interface{}) *MockAchievementService_GetSummaryByUser_Call {
+	return &MockAchievementService_GetSummaryByUser_Call{Call: _e.mock.On("GetSummaryByUser", s)}
+}
+
+func (_c *MockAchievementService_GetSummaryByUser_Call) Run(run func(s string)) *MockAchievementService_GetSummaryByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 string
+		if args[0] != nil {
+			arg0 = args[0].(string)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAchievementService_GetSummaryByUser_Call) Return(achievementsSummary *dto.AchievementsSummary, aPIError *api.APIError) *MockAchievementService_GetSummaryByUser_Call {
+	_c.Call.Return(achievementsSummary, aPIError)
+	return _c
+}
+
+func (_c *MockAchievementService_GetSummaryByUser_Call) RunAndReturn(run func(s string) (*dto.AchievementsSummary, *api.APIError)) *MockAchievementService_GetSummaryByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReevalByDiffs provides a mock function for the type MockAchievementService
 func (_mock *MockAchievementService) ReevalByDiffs(ruleDiffs []dto.RuleDiff) error {
 	ret := _mock.Called(ruleDiffs)

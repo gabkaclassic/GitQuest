@@ -12,6 +12,7 @@ type AchievementRepository interface {
 	SaveAll([]dto.Achievement) error
 	ExistsInAllTime(*dto.Achievement) (bool, error)
 	ReevalByRuleDiff(*dto.RuleDiff) ([]string, error)
+	GetByUser(string) (*dto.AchievementsSummary, error)
 }
 
 type achievementRepository struct {
@@ -26,6 +27,34 @@ func NewAchievementRepository(storage *sql.DB) (AchievementRepository, error) {
 
 	return &achievementRepository{
 		storage: storage,
+	}, nil
+}
+
+func (repository *achievementRepository) GetByUser(user string) (*dto.AchievementsSummary, error) {
+
+	rows, err := repository.storage.Query(
+		`SELECT rule_name, reward, SUM(reward) OVER() AS total FROM achievements WHERE "user" = $1`,
+		user,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	achievements := make([]dto.AchievementInfo, 0)
+	sum := 0
+	for rows.Next() {
+		var achievement dto.AchievementInfo
+		err := rows.Scan(&achievement.RuleName, &achievement.Reward, &sum)
+		if err != nil {
+			return nil, err
+		}
+		achievements = append(achievements, achievement)
+	}
+
+	return &dto.AchievementsSummary{
+		Achievements: achievements,
+		RewardSum:    sum,
 	}, nil
 }
 

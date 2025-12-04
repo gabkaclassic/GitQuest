@@ -716,3 +716,96 @@ func TestAchievementRepository_ReevalByRuleDiff(t *testing.T) {
 		})
 	}
 }
+
+func TestAchievementRepository_GetByUser(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	repo := &achievementRepository{storage: db}
+
+	user := "u"
+
+	tests := []struct {
+		name        string
+		mockFn      func()
+		expect      *dto.AchievementsSummary
+		expectError bool
+	}{
+		{
+			name: "success",
+			mockFn: func() {
+				rows := sqlmock.NewRows([]string{"rule_name", "reward", "total"}).
+					AddRow("r1", 1, 3).
+					AddRow("r2", 2, 3)
+
+				mock.
+					ExpectQuery(`SELECT rule_name, reward, SUM\(reward\) OVER\(\) AS total FROM achievements WHERE "user" = \$1`).
+					WithArgs(user).
+					WillReturnRows(rows)
+			},
+			expect: &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{
+					{RuleName: "r1", Reward: 1},
+					{RuleName: "r2", Reward: 2},
+				},
+				RewardSum: 3,
+			},
+		},
+		{
+			name: "query error",
+			mockFn: func() {
+				mock.
+					ExpectQuery(`SELECT rule_name, reward, SUM\(reward\) OVER\(\) AS total FROM achievements WHERE "user" = \$1`).
+					WithArgs(user).
+					WillReturnError(errors.New("db fail"))
+			},
+			expectError: true,
+		},
+		{
+			name: "scan error",
+			mockFn: func() {
+				rows := sqlmock.NewRows([]string{"rule_name", "reward", "total"}).
+					AddRow("r1", "x", 3)
+
+				mock.
+					ExpectQuery(`SELECT rule_name, reward, SUM\(reward\) OVER\(\) AS total FROM achievements WHERE "user" = \$1`).
+					WithArgs(user).
+					WillReturnRows(rows)
+			},
+			expectError: true,
+		},
+		{
+			name: "empty result",
+			mockFn: func() {
+				rows := sqlmock.NewRows([]string{"rule_name", "reward", "total"})
+				mock.
+					ExpectQuery(`SELECT rule_name, reward, SUM\(reward\) OVER\(\) AS total FROM achievements WHERE "user" = \$1`).
+					WithArgs(user).
+					WillReturnRows(rows)
+			},
+			expect: &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{},
+				RewardSum:    0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockFn()
+
+			out, err := repo.GetByUser(user)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.NoError(t, mock.ExpectationsWereMet())
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expect, out)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}

@@ -4,13 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gabkaclassic/GitQuest/internal/cache"
-	"github.com/gabkaclassic/GitQuest/internal/dto"
-	"github.com/gabkaclassic/GitQuest/internal/repository"
-	"github.com/google/uuid"
 	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/gabkaclassic/GitQuest/internal/cache"
+	"github.com/gabkaclassic/GitQuest/internal/dto"
+	"github.com/gabkaclassic/GitQuest/internal/repository"
+	"github.com/gabkaclassic/GitQuest/internal/storage"
+	api "github.com/gabkaclassic/metrics/pkg/error"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,6 +23,7 @@ const (
 type AchievementService interface {
 	CheckForNewAchievements(context.Context, []dto.Rule) error
 	ReevalByDiffs([]dto.RuleDiff) error
+	GetSummaryByUser(string) (*dto.AchievementsSummary, *api.APIError)
 }
 
 type achievementService struct {
@@ -72,6 +76,23 @@ func NewAchievementService(
 		achievementCacheClient: achievementCacheClient,
 		notificationService:    notificationService,
 	}, nil
+}
+
+func (service *achievementService) GetSummaryByUser(user string) (*dto.AchievementsSummary, *api.APIError) {
+
+	summary, err := service.repository.GetByUser(user)
+
+	if err != nil {
+		if storage.IsNotFoundError(err) {
+			return &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{},
+			}, nil
+		}
+
+		return nil, api.Internal("Get achievements for user error", err)
+	}
+
+	return summary, nil
 }
 
 func (service *achievementService) CheckForNewAchievements(
