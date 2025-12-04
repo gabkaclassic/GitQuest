@@ -76,9 +76,9 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 			name: "success multiple users",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
-				mock.ExpectSet("user:user2", "user2", 0).SetVal("OK")
-				mock.ExpectSet("user:user3", "user3", 0).SetVal("OK")
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user1"}).SetVal(1)
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user2"}).SetVal(1)
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user3"}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input:       []string{"user1", "user2", "user3"},
@@ -88,7 +88,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 			name: "success single user",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectSet("user:testuser", "testuser", 0).SetVal("OK")
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "testuser"}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input:       []string{"testuser"},
@@ -98,8 +98,7 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 			name: "pipeline exec failure",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
-				mock.ExpectTxPipelineExec().SetErr(errors.New("pipeline error"))
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user1"}).SetErr(errors.New("pipeline error"))
 			},
 			input:       []string{"user1"},
 			expectError: true,
@@ -120,18 +119,18 @@ func TestUserCacheClient_SaveAll(t *testing.T) {
 			name: "success duplicate users",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
-				mock.ExpectSet("user:user1", "user1", 0).SetVal("OK")
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user1"}).SetVal(1)
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user1"}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input:       []string{"user1", "user1"},
 			expectError: false,
 		},
 		{
-			name: "set command failure in pipeline",
+			name: "ZAdd command failure in pipeline",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectSet("user:user1", "user1", 0).SetErr(errors.New("set error"))
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user1"}).SetErr(errors.New("zadd error"))
 			},
 			input:       []string{"user1"},
 			expectError: true,
@@ -168,15 +167,15 @@ func TestUserCacheClient_Save(t *testing.T) {
 		{
 			name: "success",
 			mockFn: func() {
-				mock.ExpectSet("user:testuser", true, 0).SetVal("OK")
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "testuser"}).SetVal(1)
 			},
 			input:       "testuser",
 			expectError: false,
 		},
 		{
-			name: "set failure",
+			name: "ZAdd failure",
 			mockFn: func() {
-				mock.ExpectSet("user:erroruser", true, 0).SetErr(errors.New("redis error"))
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "erroruser"}).SetErr(errors.New("redis error"))
 			},
 			input:       "erroruser",
 			expectError: true,
@@ -184,7 +183,7 @@ func TestUserCacheClient_Save(t *testing.T) {
 		{
 			name: "success with special characters",
 			mockFn: func() {
-				mock.ExpectSet("user:user-name_123", true, 0).SetVal("OK")
+				mock.ExpectZAdd(usersKey, redis.Z{Member: "user-name_123"}).SetVal(1)
 			},
 			input:       "user-name_123",
 			expectError: false,
@@ -221,8 +220,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 		{
 			name: "success multiple users",
 			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2", "user:user3"})
-				mock.ExpectMGet("user:user1", "user:user2", "user:user3").SetVal([]any{"user1", "user2", "user3"})
+				mock.ExpectZRange(usersKey, 0, -1).SetVal([]string{"user1", "user2", "user3"})
 			},
 			expected:    []string{"user1", "user2", "user3"},
 			expectError: false,
@@ -230,25 +228,15 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 		{
 			name: "success single user",
 			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:testuser"})
-				mock.ExpectMGet("user:testuser").SetVal([]any{"testuser"})
+				mock.ExpectZRange(usersKey, 0, -1).SetVal([]string{"testuser"})
 			},
 			expected:    []string{"testuser"},
 			expectError: false,
 		},
 		{
-			name: "keys command failure",
+			name: "ZRange failure",
 			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetErr(errors.New("keys error"))
-			},
-			expected:    nil,
-			expectError: true,
-		},
-		{
-			name: "mget command failure",
-			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2"})
-				mock.ExpectMGet("user:user1", "user:user2").SetErr(errors.New("mget error"))
+				mock.ExpectZRange(usersKey, 0, -1).SetErr(errors.New("zrange error"))
 			},
 			expected:    nil,
 			expectError: true,
@@ -256,34 +244,7 @@ func TestUserCacheClient_GetAll(t *testing.T) {
 		{
 			name: "no users found",
 			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{})
-			},
-			expected:    nil,
-			expectError: false,
-		},
-		{
-			name: "success with nil values",
-			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2", "user:user3"})
-				mock.ExpectMGet("user:user1", "user:user2", "user:user3").SetVal([]any{"user1", nil, "user3"})
-			},
-			expected:    []string{"user1", "user3"},
-			expectError: false,
-		},
-		{
-			name: "success with wrong type values",
-			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2"})
-				mock.ExpectMGet("user:user1", "user:user2").SetVal([]any{123, "user2"})
-			},
-			expected:    []string{"user2"},
-			expectError: false,
-		},
-		{
-			name: "all nil values",
-			mockFn: func() {
-				mock.ExpectKeys(allUsersKey).SetVal([]string{"user:user1", "user:user2"})
-				mock.ExpectMGet("user:user1", "user:user2").SetVal([]any{nil, nil})
+				mock.ExpectZRange(usersKey, 0, -1).SetVal([]string{})
 			},
 			expected:    nil,
 			expectError: false,

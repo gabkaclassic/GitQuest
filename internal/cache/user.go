@@ -3,14 +3,12 @@ package cache
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/redis/go-redis/v9"
 )
 
 const (
-	userKeyPrefix = "user"
-	allUsersKey   = "user:*"
+	usersKey = "user"
 )
 
 type UserCacheClient interface {
@@ -43,8 +41,9 @@ func (client *userCacheClient) SaveAll(ctx context.Context, users []string) erro
 	pipeline := client.storage.TxPipeline()
 
 	for _, user := range users {
-		key := fmt.Sprintf("%s:%s", userKeyPrefix, user)
-		pipeline.Set(ctx, key, user, 0)
+		pipeline.ZAdd(ctx, usersKey, redis.Z{
+			Member: user,
+		})
 	}
 	_, err := pipeline.Exec(ctx)
 
@@ -53,36 +52,19 @@ func (client *userCacheClient) SaveAll(ctx context.Context, users []string) erro
 
 func (client *userCacheClient) Save(ctx context.Context, user string) error {
 
-	_, err := client.storage.Set(
-		ctx,
-		fmt.Sprintf("%s:%s", userKeyPrefix, user),
-		true, 0,
-	).Result()
+	_, err := client.storage.ZAdd(ctx, usersKey, redis.Z{
+		Member: user,
+	}).Result()
 
 	return err
 }
 
 func (client *userCacheClient) GetAll(ctx context.Context) ([]string, error) {
-	var users []string
 
-	keys, err := client.storage.Keys(ctx, allUsersKey).Result()
+	users, err := client.storage.ZRange(ctx, usersKey, 0, -1).Result()
+
 	if err != nil {
 		return nil, err
-	}
-
-	if len(keys) == 0 {
-		return users, nil
-	}
-
-	values, err := client.storage.MGet(ctx, keys...).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, value := range values {
-		if str, ok := value.(string); ok {
-			users = append(users, str)
-		}
 	}
 
 	return users, nil
