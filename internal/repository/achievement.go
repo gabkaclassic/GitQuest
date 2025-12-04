@@ -48,11 +48,14 @@ func (repository *achievementRepository) GetByUser(ctx context.Context, user str
 	sum := 0
 	for rows.Next() {
 		var achievement dto.AchievementInfo
-		err := rows.Scan(&achievement.RuleName, &achievement.Reward, &sum)
-		if err != nil {
+		if err := rows.Scan(&achievement.RuleName, &achievement.Reward, &sum); err != nil {
 			return nil, err
 		}
 		achievements = append(achievements, achievement)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &dto.AchievementsSummary{

@@ -764,6 +764,20 @@ func TestAchievementRepository_GetByUser(t *testing.T) {
 			expectError: true,
 		},
 		{
+			name: "rows error",
+			mockFn: func() {
+				rows := sqlmock.NewRows([]string{"rule_name", "reward", "total"}).
+					AddRow("r1", 1, 1)
+				rows.RowError(0, errors.New("row err"))
+
+				mock.
+					ExpectQuery(`SELECT rule_name, reward, SUM\(reward\) OVER\(\) AS total FROM achievements WHERE "user" = \$1`).
+					WithArgs(user).
+					WillReturnRows(rows)
+			},
+			expectError: true,
+		},
+		{
 			name: "scan error",
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"rule_name", "reward", "total"}).
