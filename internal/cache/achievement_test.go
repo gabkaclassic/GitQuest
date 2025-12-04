@@ -2,7 +2,9 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -59,6 +61,142 @@ func TestNewAchievementCacheClient(t *testing.T) {
 				assert.IsType(t, &achievementCacheClient{}, client)
 				assert.Equal(t, storage, client.(*achievementCacheClient).storage)
 			}
+		})
+	}
+}
+
+func TestAchievementCacheClient_SetUserAchievementsSummary(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	client := &achievementCacheClient{storage: db}
+	ctx := context.Background()
+
+	user := "user1"
+	summary := &dto.AchievementsSummary{
+		Achievements: []dto.AchievementInfo{
+			{RuleName: "rule1", Reward: 10},
+			{RuleName: "rule2", Reward: 5},
+		},
+		RewardSum: 15,
+	}
+
+	tests := []struct {
+		name        string
+		mockFn      func()
+		expectError bool
+	}{
+		{
+			name: "success",
+			mockFn: func() {
+				data, _ := json.Marshal(summary)
+				mock.ExpectSetEx(
+					fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
+					data,
+					userSummaryTTL,
+				).SetVal("OK")
+			},
+			expectError: false,
+		},
+		{
+			name: "setex failure",
+			mockFn: func() {
+				data, _ := json.Marshal(summary)
+				mock.ExpectSetEx(
+					fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
+					data,
+					userSummaryTTL,
+				).SetErr(errors.New("redis error"))
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockFn()
+			err := client.SetUserAchievementsSummary(ctx, user, summary)
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
+func TestAchievementCacheClient_GetUserAchievementsSummary(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	client := &achievementCacheClient{storage: db}
+	ctx := context.Background()
+
+	user := "user1"
+	summary := &dto.AchievementsSummary{
+		Achievements: []dto.AchievementInfo{
+			{RuleName: "rule1", Reward: 10},
+			{RuleName: "rule2", Reward: 20},
+		},
+		RewardSum: 30,
+	}
+	summaryJSON, _ := json.Marshal(summary)
+
+	tests := []struct {
+		name        string
+		mockFn      func()
+		expected    *dto.AchievementsSummary
+		expectError bool
+	}{
+		{
+			name: "success",
+			mockFn: func() {
+				mock.ExpectGet(fmt.Sprintf("%s:%s", summaryKeyPrefix, user)).
+					SetVal(string(summaryJSON))
+			},
+			expected:    summary,
+			expectError: false,
+		},
+		{
+			name: "key does not exist",
+			mockFn: func() {
+				mock.ExpectGet(fmt.Sprintf("%s:%s", summaryKeyPrefix, user)).
+					SetErr(redis.Nil)
+			},
+			expected:    nil,
+			expectError: false,
+		},
+		{
+			name: "redis error",
+			mockFn: func() {
+				mock.ExpectGet(fmt.Sprintf("%s:%s", summaryKeyPrefix, user)).
+					SetErr(errors.New("redis error"))
+			},
+			expected:    nil,
+			expectError: true,
+		},
+		{
+			name: "invalid json",
+			mockFn: func() {
+				mock.ExpectGet(fmt.Sprintf("%s:%s", summaryKeyPrefix, user)).
+					SetVal("invalid json")
+			},
+			expected:    nil,
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockFn()
+			result, err := client.GetUserAchievementsSummary(ctx, user)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, result)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, result)
+			}
+
+			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 	}
 }

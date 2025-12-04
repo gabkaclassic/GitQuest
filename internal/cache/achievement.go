@@ -2,9 +2,11 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/redis/go-redis/v9"
@@ -12,11 +14,16 @@ import (
 
 const (
 	achievementKeyPrefix = "achievement"
+	summaryKeyPrefix     = "summary"
+
+	userSummaryTTL = 5 * time.Minute
 )
 
 type AchievementCacheClient interface {
 	SaveAll(context.Context, []dto.Achievement) error
 	AchievementExists(context.Context, *dto.Achievement) (bool, error)
+	GetUserAchievementsSummary(context.Context, string) (*dto.AchievementsSummary, error)
+	SetUserAchievementsSummary(context.Context, string, *dto.AchievementsSummary) error
 }
 
 type achievementCacheClient struct {
@@ -34,6 +41,48 @@ func NewAchievementCacheClient(storage *redis.Client) (AchievementCacheClient, e
 	}, nil
 }
 
+func (client *achievementCacheClient) SetUserAchievementsSummary(ctx context.Context, user string, summary *dto.AchievementsSummary) error {
+	key := fmt.Sprintf("%s:%s", summaryKeyPrefix, user)
+
+	data, err := json.Marshal(summary)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = client.storage.SetEx(ctx, key, data, userSummaryTTL).Result()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (client *achievementCacheClient) GetUserAchievementsSummary(ctx context.Context, user string) (*dto.AchievementsSummary, error) {
+
+	key := fmt.Sprintf("%s:%s", summaryKeyPrefix, user)
+
+	data, err := client.storage.Get(ctx, key).Result()
+
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	var summary dto.AchievementsSummary
+	err = json.Unmarshal([]byte(data), &summary)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &summary, nil
+}
+
 func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements []dto.Achievement) error {
 
 	if achievements == nil {
@@ -43,14 +92,16 @@ func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements 
 	pipeline := client.storage.TxPipeline()
 
 	for _, achievement := range achievements {
-		key := fmt.Sprintf("%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName)
+		achievementKey := fmt.Sprintf("%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName)
+
 		pipeline.ZAdd(
-			ctx, key, redis.Z{
+			ctx, achievementKey, redis.Z{
 				Score:  float64(achievement.EndRange.Unix()),
 				Member: achievement.EndRange.Unix(),
 			},
 		)
 	}
+
 	_, err := pipeline.Exec(ctx)
 
 	return err
