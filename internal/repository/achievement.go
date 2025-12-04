@@ -147,6 +147,10 @@ func (repository *achievementRepository) ReevalByRuleDiff(diff *dto.RuleDiff) ([
 			}
 		}
 
+		if err := rows.Err(); err != nil {
+			return err
+		}
+
 		return nil
 	})
 
