@@ -90,7 +90,7 @@ func NewApp() (*App, error) {
 		return nil, fmt.Errorf("failed load users to cache: %w", err)
 	}
 
-	router, err := setupRouter(services)
+	router, err := setupRouter(services, &cfg.Server.Ratelimit)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to setup HTTP router: %w", err)
@@ -289,7 +289,7 @@ func initializeServices(cfg *config.Notification, repositories *repositoriesList
 	}, nil
 }
 
-func setupRouter(services *servicesList) (http.Handler, error) {
+func setupRouter(services *servicesList, ratelimitCfg *config.Ratelimit) (http.Handler, error) {
 	eventHandler, err := handler.NewEventHandler(services.EventService)
 	if err != nil {
 		return nil, err
@@ -309,5 +309,6 @@ func setupRouter(services *servicesList) (http.Handler, error) {
 		EventHandler:       eventHandler,
 		RuleHandler:        ruleHandler,
 		AchievementHandler: achievementHandler,
+		Ratelimit:          ratelimitCfg,
 	})
 }

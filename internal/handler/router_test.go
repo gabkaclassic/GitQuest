@@ -1,8 +1,10 @@
 package handler
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/gabkaclassic/GitQuest/internal/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSetupRouter(t *testing.T) {
@@ -18,6 +20,7 @@ func TestSetupRouter(t *testing.T) {
 				EventHandler:       nil,
 				RuleHandler:        &RuleHandler{},
 				AchievementHandler: &AchievementHandler{},
+				Ratelimit:          &config.Ratelimit{},
 			},
 			expectErr:    true,
 			errSubstring: "event handler is nil",
@@ -28,6 +31,7 @@ func TestSetupRouter(t *testing.T) {
 				EventHandler:       &EventHandler{},
 				RuleHandler:        nil,
 				AchievementHandler: &AchievementHandler{},
+				Ratelimit:          &config.Ratelimit{},
 			},
 			expectErr:    true,
 			errSubstring: "rule handler is nil",
@@ -38,9 +42,21 @@ func TestSetupRouter(t *testing.T) {
 				EventHandler:       &EventHandler{},
 				RuleHandler:        &RuleHandler{},
 				AchievementHandler: nil,
+				Ratelimit:          &config.Ratelimit{},
 			},
 			expectErr:    true,
 			errSubstring: "achievement handler is nil",
+		},
+		{
+			name: "nil ratelimit config",
+			cfg: &RouterConfiguration{
+				EventHandler:       &EventHandler{},
+				RuleHandler:        &RuleHandler{},
+				AchievementHandler: &AchievementHandler{},
+				Ratelimit:          nil,
+			},
+			expectErr:    true,
+			errSubstring: "ratelimit config is nil",
 		},
 		{
 			name: "ok",
@@ -48,6 +64,7 @@ func TestSetupRouter(t *testing.T) {
 				EventHandler:       &EventHandler{},
 				RuleHandler:        &RuleHandler{},
 				AchievementHandler: &AchievementHandler{},
+				Ratelimit:          &config.Ratelimit{},
 			},
 			expectErr: false,
 		},

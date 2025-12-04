@@ -24,7 +24,12 @@ type (
 		Notification Notification
 	}
 	Server struct {
-		Address string `env:"ADDRESS" envDefault:"localhost:8080"`
+		Address   string `env:"ADDRESS" envDefault:"localhost:8080"`
+		Ratelimit Ratelimit
+	}
+	Ratelimit struct {
+		Window time.Duration `env:"RATELIMIT_WINDOW" envDefault:"60"`
+		Limit  int           `env:"RATELIMIT" envDefault:"600"`
 	}
 	DB struct {
 		Driver         string `env:"DB_DRIVER" envDefault:"postgres"`
@@ -104,6 +109,8 @@ func ParseConfig() (*Config, error) {
 	}
 
 	address := flag.String("a", cfg.Server.Address, "HTTP server address")
+	ratelimitWindow := flag.Duration("ratelimit-window", cfg.Server.Ratelimit.Window, "Time window for ratelimit")
+	ratelimit := flag.Int("ratelimit", cfg.Server.Ratelimit.Limit, "Requests amount limit")
 
 	rulesFilePath := flag.String("r", "./config/rules.yaml", "File path to rules yaml config")
 
@@ -136,6 +143,11 @@ func ParseConfig() (*Config, error) {
 		switch f.Name {
 		case "a":
 			cfg.Server.Address = *address
+
+		case "ratelimit-window":
+			cfg.Server.Ratelimit.Window = *ratelimitWindow
+		case "ratelimit":
+			cfg.Server.Ratelimit.Limit = *ratelimit
 
 		case "log-level":
 			cfg.Log.Level = *logLevel

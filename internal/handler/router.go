@@ -2,17 +2,18 @@ package handler
 
 import (
 	"errors"
-	"net/http"
-
-	"github.com/go-chi/chi/v5"
-
+	"github.com/gabkaclassic/GitQuest/internal/config"
 	"github.com/gabkaclassic/metrics/pkg/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httprate"
+	"net/http"
 )
 
 type RouterConfiguration struct {
 	EventHandler       *EventHandler
 	RuleHandler        *RuleHandler
 	AchievementHandler *AchievementHandler
+	Ratelimit          *config.Ratelimit
 }
 
 func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
@@ -29,10 +30,20 @@ func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
 		return nil, errors.New("setup router error: achievement handler is nil")
 	}
 
+	if config.Ratelimit == nil {
+		return nil, errors.New("setup router error: ratelimit config is nil")
+	}
+
 	router := chi.NewRouter()
 
 	router.Use(
 		middleware.Logger,
+		httprate.Limit(
+			config.Ratelimit.Limit,
+			config.Ratelimit.Window,
+			httprate.WithKeyFuncs(httprate.KeyByIP),
+			httprate.WithResponseHeaders(httprate.ResponseHeaders{}),
+		),
 	)
 
 	// Ping endpoint
