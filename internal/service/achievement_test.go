@@ -3,10 +3,11 @@ package service
 import (
 	"context"
 	"errors"
-	api "github.com/gabkaclassic/metrics/pkg/error"
-	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
+
+	api "github.com/gabkaclassic/metrics/pkg/error"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/dto"
@@ -513,7 +514,8 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 	user := "u"
 
 	type mocks struct {
-		repo *repository.MockAchievementRepository
+		repo  *repository.MockAchievementRepository
+		cache *cache.MockAchievementCacheClient
 	}
 
 	tests := []struct {
@@ -523,10 +525,9 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 		expectedErr *api.APIError
 	}{
 		{
-			name: "ok",
+			name: "cache hit",
 			setup: func(m mocks) {
-				m.repo.
-					On("GetByUser", mock.Anything, user).
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
 					Return(&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{
 							{RuleName: "r1", Reward: 1},
@@ -540,12 +541,47 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 					{RuleName: "r2", Reward: 2},
 				},
 			},
+			expectedErr: nil,
 		},
 		{
-			name: "internal",
+			name: "cache miss repo hit",
 			setup: func(m mocks) {
-				m.repo.
-					On("GetByUser", mock.Anything, user).
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
+					Return(nil, nil)
+				m.repo.On("GetByUser", mock.Anything, user).
+					Return(&dto.AchievementsSummary{
+						Achievements: []dto.AchievementInfo{
+							{RuleName: "r3", Reward: 3},
+						},
+					}, nil)
+				m.cache.On("SetUserAchievementsSummary", mock.Anything, user,
+					&dto.AchievementsSummary{
+						Achievements: []dto.AchievementInfo{
+							{RuleName: "r3", Reward: 3},
+						},
+					}).Return(nil)
+			},
+			expected: &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{
+					{RuleName: "r3", Reward: 3},
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "cache error",
+			setup: func(m mocks) {
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
+					Return(nil, errors.New("cache err"))
+			},
+			expectedErr: api.Internal("Get achievements for user error", errors.New("cache err")),
+		},
+		{
+			name: "repo error",
+			setup: func(m mocks) {
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
+					Return(nil, nil)
+				m.repo.On("GetByUser", mock.Anything, user).
 					Return(nil, errors.New("db err"))
 			},
 			expectedErr: api.Internal("Get achievements for user error", errors.New("db err")),
@@ -555,24 +591,27 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(repository.MockAchievementRepository)
+			mockCache := new(cache.MockAchievementCacheClient)
 
-			tt.setup(mocks{repo: mockRepo})
+			tt.setup(mocks{repo: mockRepo, cache: mockCache})
 
-			svc := &achievementService{repository: mockRepo}
+			svc := &achievementService{
+				repository:             mockRepo,
+				achievementCacheClient: mockCache,
+			}
 
-			out, err := svc.GetSummaryByUser(t.Context(), user)
+			out, err := svc.GetSummaryByUser(context.Background(), user)
 
 			if tt.expectedErr != nil {
 				assert.Nil(t, out)
 				assert.NotNil(t, err)
-				mockRepo.AssertExpectations(t)
-				return
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tt.expected, out)
 			}
 
-			assert.Nil(t, err)
-			assert.Equal(t, tt.expected, out)
-
 			mockRepo.AssertExpectations(t)
+			mockCache.AssertExpectations(t)
 		})
 	}
 }

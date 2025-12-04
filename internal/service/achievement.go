@@ -80,17 +80,29 @@ func NewAchievementService(
 
 func (service *achievementService) GetSummaryByUser(ctx context.Context, user string) (*dto.AchievementsSummary, *api.APIError) {
 
-	summary, err := service.repository.GetByUser(ctx, user)
+	summary, err := service.achievementCacheClient.GetUserAchievementsSummary(ctx, user)
+
+	if err != nil {
+		return nil, api.Internal("Get achievements for user error", err)
+	}
+
+	if summary != nil {
+		return summary, nil
+	}
+
+	summary, err = service.repository.GetByUser(ctx, user)
 
 	if err != nil {
 		if storage.IsNotFoundError(err) {
-			return &dto.AchievementsSummary{
+			summary = &dto.AchievementsSummary{
 				Achievements: []dto.AchievementInfo{},
-			}, nil
+			}
 		}
 
 		return nil, api.Internal("Get achievements for user error", err)
 	}
+
+	service.achievementCacheClient.SetUserAchievementsSummary(ctx, user, summary)
 
 	return summary, nil
 }
