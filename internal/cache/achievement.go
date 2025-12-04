@@ -43,7 +43,7 @@ func (client *achievementCacheClient) SaveAll(ctx context.Context, achievements 
 	pipeline := client.storage.TxPipeline()
 
 	for _, achievement := range achievements {
-		key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
+		key := fmt.Sprintf("%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName)
 		pipeline.ZAdd(
 			ctx, key, redis.Z{
 				Score:  float64(achievement.EndRange.Unix()),
@@ -62,7 +62,7 @@ func (client *achievementCacheClient) AchievementExists(ctx context.Context, ach
 		return false, errors.New("achievement cannot be nil")
 	}
 
-	key := fmt.Sprintf("%s:%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName, achievement.RuleVersion)
+	key := fmt.Sprintf("%s:%s:%s", achievementKeyPrefix, achievement.User, achievement.RuleName)
 
 	var minScore, maxScore string
 

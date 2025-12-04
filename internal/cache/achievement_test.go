@@ -79,11 +79,11 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 			mockFn: func() {
 				mock.ExpectTxPipeline()
 
-				mock.ExpectZAdd("achievement:user1:rule1:v1", redis.Z{
+				mock.ExpectZAdd("achievement:user1:rule1", redis.Z{
 					Score:  100,
 					Member: int64(100),
 				}).SetVal(1)
-				mock.ExpectZAdd("achievement:user2:rule2:v2", redis.Z{
+				mock.ExpectZAdd("achievement:user2:rule2", redis.Z{
 					Score:  200,
 					Member: int64(200),
 				}).SetVal(1)
@@ -100,7 +100,7 @@ func TestAchievementCacheClient_SaveAll(t *testing.T) {
 			name: "pipeline exec failure",
 			mockFn: func() {
 				mock.ExpectTxPipeline()
-				mock.ExpectZAdd("achievement:user1:rule1:v1", redis.Z{
+				mock.ExpectZAdd("achievement:user1:rule1", redis.Z{
 					Score:  100,
 					Member: int64(100),
 				}).SetVal(1)
@@ -166,7 +166,7 @@ func TestAchievementCacheClient_AchievementExists(t *testing.T) {
 			name: "exists",
 			mockFn: func() {
 				mock.ExpectZRangeByScoreWithScores(
-					"achievement:user1:rule1:v1",
+					"achievement:user1:rule1",
 					&redis.ZRangeBy{Min: "-inf", Max: "+inf"},
 				).SetVal([]redis.Z{{Score: float64(now.Unix()), Member: int64(now.Unix())}})
 			},
@@ -178,7 +178,7 @@ func TestAchievementCacheClient_AchievementExists(t *testing.T) {
 			name: "does not exist",
 			mockFn: func() {
 				mock.ExpectZRangeByScoreWithScores(
-					"achievement:user1:rule1:v1",
+					"achievement:user1:rule1",
 					&redis.ZRangeBy{Min: "-inf", Max: "+inf"},
 				).SetVal([]redis.Z{})
 			},
@@ -190,7 +190,7 @@ func TestAchievementCacheClient_AchievementExists(t *testing.T) {
 			name: "redis error",
 			mockFn: func() {
 				mock.ExpectZRangeByScoreWithScores(
-					"achievement:user1:rule1:v1",
+					"achievement:user1:rule1",
 					&redis.ZRangeBy{Min: "-inf", Max: "+inf"},
 				).SetErr(errors.New("fail"))
 			},
