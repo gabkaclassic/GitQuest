@@ -26,10 +26,14 @@ type (
 	Server struct {
 		Address   string `env:"ADDRESS" envDefault:"localhost:8080"`
 		Ratelimit Ratelimit
+		Auth      Auth
 	}
 	Ratelimit struct {
 		Window time.Duration `env:"RATELIMIT_WINDOW" envDefault:"60"`
 		Limit  int           `env:"RATELIMIT" envDefault:"600"`
+	}
+	Auth struct {
+		Secret string `env:"JWT_SECRET"`
 	}
 	DB struct {
 		Driver         string `env:"DB_DRIVER" envDefault:"postgres"`
@@ -109,6 +113,9 @@ func ParseConfig() (*Config, error) {
 	}
 
 	address := flag.String("a", cfg.Server.Address, "HTTP server address")
+
+	jwtSecret := flag.String("jwt-secret", cfg.Server.Auth.Secret, "JWT secret")
+
 	ratelimitWindow := flag.Duration("ratelimit-window", cfg.Server.Ratelimit.Window, "Time window for ratelimit")
 	ratelimit := flag.Int("ratelimit", cfg.Server.Ratelimit.Limit, "Requests amount limit")
 
@@ -143,6 +150,9 @@ func ParseConfig() (*Config, error) {
 		switch f.Name {
 		case "a":
 			cfg.Server.Address = *address
+
+		case "jwt-secret":
+			cfg.Server.Auth.Secret = *jwtSecret
 
 		case "ratelimit-window":
 			cfg.Server.Ratelimit.Window = *ratelimitWindow

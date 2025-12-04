@@ -9,6 +9,7 @@ MIGRATIONS_DIR = ./migrations
 
 build:
 	go build -o build/server cmd/server/main.go
+	go build -o build/token cmd/token/main.go
 
 test:
 	@echo "==> Running tests with coverage..."

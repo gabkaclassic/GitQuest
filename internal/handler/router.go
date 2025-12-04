@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"github.com/gabkaclassic/GitQuest/internal/config"
+	middlewares "github.com/gabkaclassic/GitQuest/pkg/middleware"
 	"github.com/gabkaclassic/metrics/pkg/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httprate"
@@ -14,6 +15,7 @@ type RouterConfiguration struct {
 	RuleHandler        *RuleHandler
 	AchievementHandler *AchievementHandler
 	Ratelimit          *config.Ratelimit
+	Auth               *config.Auth
 }
 
 func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
@@ -34,10 +36,15 @@ func SetupRouter(config *RouterConfiguration) (http.Handler, error) {
 		return nil, errors.New("setup router error: ratelimit config is nil")
 	}
 
+	if config.Auth == nil {
+		return nil, errors.New("setup router error: auth config is nil")
+	}
+
 	router := chi.NewRouter()
 
 	router.Use(
 		middleware.Logger,
+		middlewares.JWTAuth([]byte(config.Auth.Secret)),
 		httprate.Limit(
 			config.Ratelimit.Limit,
 			config.Ratelimit.Window,
