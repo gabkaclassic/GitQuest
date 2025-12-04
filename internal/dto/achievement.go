@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -25,3 +26,11 @@ type (
 		RewardSum    int               `json:"rewardSum"`
 	}
 )
+
+func (a AchievementInfo) MarshalBinary() ([]byte, error) {
+	return json.Marshal(a)
+}
+
+func (a *AchievementInfo) UnmarshalBinary(b []byte) error {
+	return json.Unmarshal(b, a)
+}
