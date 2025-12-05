@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: gitquest_postgres
+    environment:
+      POSTGRES_DB: gitquest
+      POSTGRES_USER: gitquest-user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - gitquest_postgres_data:/var/lib/postgresql/data
+    networks:
+      - gitquest_network
+  redis:
+    image: redis:7.2
+    container_name: redis
+    volumes:
+      - gitquest_redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - gitquest_network
+
+volumes:
+  gitquest_redis_data:
+  gitquest_postgres_data:
+
+networks:
+  gitquest_network:
+    driver: bridge
