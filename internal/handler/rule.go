@@ -29,7 +29,7 @@ func (handler *RuleHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(rules)
 
 	if err != nil {
-		api.Internal("Get rules error", err)
+		api.RespondError(w, api.Internal("Get rules error", err))
 		return
 	}
 }

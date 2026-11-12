@@ -37,7 +37,7 @@ func (handler *AchievementHandler) GetByUser(w http.ResponseWriter, r *http.Requ
 	encodeErr := json.NewEncoder(w).Encode(summary)
 
 	if encodeErr != nil {
-		api.Internal("Get user achievements summary error", encodeErr)
+		api.RespondError(w, api.Internal("Get user achievements summary error", encodeErr))
 		return
 	}
 }
