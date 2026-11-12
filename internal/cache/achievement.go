@@ -16,6 +16,8 @@ const (
 	achievementKeyPrefix = "achievement"
 	summaryKeyPrefix     = "summary"
 
+	summaryVersionKeyPrefix = "summary_version"
+
 	userSummaryTTL = 5 * time.Minute
 )
 
@@ -23,7 +25,8 @@ type AchievementCacheClient interface {
 	SaveAll(context.Context, []dto.Achievement) error
 	AchievementExists(context.Context, *dto.Achievement) (bool, error)
 	GetUserAchievementsSummary(context.Context, string) (*dto.AchievementsSummary, error)
-	SetUserAchievementsSummary(context.Context, string, *dto.AchievementsSummary) error
+	GetUserAchievementsSummaryVersion(ctx context.Context, user string) (int64, error)
+	SetUserAchievementsSummary(ctx context.Context, user string, summary *dto.AchievementsSummary, version int64) error
 	InvalidateUserAchievementsSummaries(ctx context.Context, users []string) error
 }
 
@@ -42,22 +45,50 @@ func NewAchievementCacheClient(storage *redis.Client) (AchievementCacheClient, e
 	}, nil
 }
 
-func (client *achievementCacheClient) SetUserAchievementsSummary(ctx context.Context, user string, summary *dto.AchievementsSummary) error {
-	key := fmt.Sprintf("%s:%s", summaryKeyPrefix, user)
+const setSummaryIfVersionScript = `if (redis.call('GET', KEYS[2]) or '0') == ARGV[2] then redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[3]) return 1 end return 0`
 
+func (client *achievementCacheClient) SetUserAchievementsSummary(ctx context.Context, user string, summary *dto.AchievementsSummary, version int64) error {
 	data, err := json.Marshal(summary)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = client.storage.SetEx(ctx, key, data, userSummaryTTL).Result()
+	keys := []string{
+		fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
+		fmt.Sprintf("%s:%s", summaryVersionKeyPrefix, user),
+	}
 
-	if err != nil {
+	err = client.storage.Eval(
+		ctx,
+		setSummaryIfVersionScript,
+		keys,
+		data,
+		strconv.FormatInt(version, 10),
+		int64(userSummaryTTL/time.Second),
+	).Err()
+
+	if err != nil && !errors.Is(err, redis.Nil) {
 		return err
 	}
 
 	return nil
+}
+
+func (client *achievementCacheClient) GetUserAchievementsSummaryVersion(ctx context.Context, user string) (int64, error) {
+	key := fmt.Sprintf("%s:%s", summaryVersionKeyPrefix, user)
+
+	value, err := client.storage.Get(ctx, key).Result()
+
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return 0, nil
+		}
+
+		return 0, err
+	}
+
+	return strconv.ParseInt(value, 10, 64)
 }
 
 func (client *achievementCacheClient) GetUserAchievementsSummary(ctx context.Context, user string) (*dto.AchievementsSummary, error) {
@@ -149,11 +180,14 @@ func (client *achievementCacheClient) InvalidateUserAchievementsSummaries(ctx co
 		return nil
 	}
 
-	keys := make([]string, len(users))
+	pipeline := client.storage.TxPipeline()
 
-	for ind, user := range users {
-		keys[ind] = fmt.Sprintf("%s:%s", summaryKeyPrefix, user)
+	for _, user := range users {
+		pipeline.Incr(ctx, fmt.Sprintf("%s:%s", summaryVersionKeyPrefix, user))
+		pipeline.Del(ctx, fmt.Sprintf("%s:%s", summaryKeyPrefix, user))
 	}
 
-	return client.storage.Del(ctx, keys...).Err()
+	_, err := pipeline.Exec(ctx)
+
+	return err
 }

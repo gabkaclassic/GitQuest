@@ -79,6 +79,13 @@ func TestAchievementCacheClient_SetUserAchievementsSummary(t *testing.T) {
 		RewardSum: 15,
 	}
 
+	data, _ := json.Marshal(summary)
+	keys := []string{
+		fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
+		fmt.Sprintf("%s:%s", summaryVersionKeyPrefix, user),
+	}
+	ttl := int64(userSummaryTTL / time.Second)
+
 	tests := []struct {
 		name        string
 		mockFn      func()
@@ -87,24 +94,19 @@ func TestAchievementCacheClient_SetUserAchievementsSummary(t *testing.T) {
 		{
 			name: "success",
 			mockFn: func() {
-				data, _ := json.Marshal(summary)
-				mock.ExpectSetEx(
-					fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
-					data,
-					userSummaryTTL,
-				).SetVal("OK")
+				mock.ExpectEval(setSummaryIfVersionScript, keys, data, "3", ttl).SetVal(int64(1))
 			},
-			expectError: false,
 		},
 		{
-			name: "setex failure",
+			name: "version moved",
 			mockFn: func() {
-				data, _ := json.Marshal(summary)
-				mock.ExpectSetEx(
-					fmt.Sprintf("%s:%s", summaryKeyPrefix, user),
-					data,
-					userSummaryTTL,
-				).SetErr(errors.New("redis error"))
+				mock.ExpectEval(setSummaryIfVersionScript, keys, data, "3", ttl).SetVal(int64(0))
+			},
+		},
+		{
+			name: "eval failure",
+			mockFn: func() {
+				mock.ExpectEval(setSummaryIfVersionScript, keys, data, "3", ttl).SetErr(errors.New("redis error"))
 			},
 			expectError: true,
 		},
@@ -113,11 +115,59 @@ func TestAchievementCacheClient_SetUserAchievementsSummary(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockFn()
-			err := client.SetUserAchievementsSummary(ctx, user, summary)
+			err := client.SetUserAchievementsSummary(ctx, user, summary, 3)
 			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
+func TestAchievementCacheClient_GetUserAchievementsSummaryVersion(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	client := &achievementCacheClient{storage: db}
+	ctx := context.Background()
+	key := fmt.Sprintf("%s:%s", summaryVersionKeyPrefix, "u1")
+
+	tests := []struct {
+		name        string
+		mockFn      func()
+		expected    int64
+		expectError bool
+	}{
+		{
+			name:     "value",
+			mockFn:   func() { mock.ExpectGet(key).SetVal("3") },
+			expected: 3,
+		},
+		{
+			name:   "missing",
+			mockFn: func() { mock.ExpectGet(key).RedisNil() },
+		},
+		{
+			name:        "redis error",
+			mockFn:      func() { mock.ExpectGet(key).SetErr(errors.New("fail")) },
+			expectError: true,
+		},
+		{
+			name:        "not a number",
+			mockFn:      func() { mock.ExpectGet(key).SetVal("x") },
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockFn()
+			version, err := client.GetUserAchievementsSummaryVersion(ctx, "u1")
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, version)
 			}
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
@@ -376,14 +426,22 @@ func TestAchievementCacheClient_InvalidateUserAchievementsSummaries(t *testing.T
 		{
 			name: "success",
 			mockFn: func() {
-				mock.ExpectDel("summary:u1", "summary:u2").SetVal(2)
+				mock.ExpectTxPipeline()
+				mock.ExpectIncr("summary_version:u1").SetVal(1)
+				mock.ExpectDel("summary:u1").SetVal(1)
+				mock.ExpectIncr("summary_version:u2").SetVal(1)
+				mock.ExpectDel("summary:u2").SetVal(1)
+				mock.ExpectTxPipelineExec()
 			},
 			input: []string{"u1", "u2"},
 		},
 		{
 			name: "redis error",
 			mockFn: func() {
-				mock.ExpectDel("summary:u1").SetErr(errors.New("fail"))
+				mock.ExpectTxPipeline()
+				mock.ExpectIncr("summary_version:u1").SetVal(1)
+				mock.ExpectDel("summary:u1").SetVal(1)
+				mock.ExpectTxPipelineExec().SetErr(errors.New("fail"))
 			},
 			input:       []string{"u1"},
 			expectError: true,

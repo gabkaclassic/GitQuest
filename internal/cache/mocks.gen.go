@@ -182,6 +182,72 @@ func (_c *MockAchievementCacheClient_GetUserAchievementsSummary_Call) RunAndRetu
 	return _c
 }
 
+// GetUserAchievementsSummaryVersion provides a mock function for the type MockAchievementCacheClient
+func (_mock *MockAchievementCacheClient) GetUserAchievementsSummaryVersion(ctx context.Context, user string) (int64, error) {
+	ret := _mock.Called(ctx, user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserAchievementsSummaryVersion")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, user)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, user)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, user)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserAchievementsSummaryVersion'
+type MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call struct {
+	*mock.Call
+}
+
+// GetUserAchievementsSummaryVersion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - user string
+func (_e *MockAchievementCacheClient_Expecter) GetUserAchievementsSummaryVersion(ctx any, user any) *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call {
+	return &MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call{Call: _e.mock.On("GetUserAchievementsSummaryVersion", ctx, user)}
+}
+
+func (_c *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call) Run(run func(ctx context.Context, user string)) *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call) Return(n int64, err error) *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call) RunAndReturn(run func(ctx context.Context, user string) (int64, error)) *MockAchievementCacheClient_GetUserAchievementsSummaryVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // InvalidateUserAchievementsSummaries provides a mock function for the type MockAchievementCacheClient
 func (_mock *MockAchievementCacheClient) InvalidateUserAchievementsSummaries(ctx context.Context, users []string) error {
 	ret := _mock.Called(ctx, users)
@@ -297,16 +363,16 @@ func (_c *MockAchievementCacheClient_SaveAll_Call) RunAndReturn(run func(context
 }
 
 // SetUserAchievementsSummary provides a mock function for the type MockAchievementCacheClient
-func (_mock *MockAchievementCacheClient) SetUserAchievementsSummary(context1 context.Context, s string, achievementsSummary *dto.AchievementsSummary) error {
-	ret := _mock.Called(context1, s, achievementsSummary)
+func (_mock *MockAchievementCacheClient) SetUserAchievementsSummary(ctx context.Context, user string, summary *dto.AchievementsSummary, version int64) error {
+	ret := _mock.Called(ctx, user, summary, version)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetUserAchievementsSummary")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *dto.AchievementsSummary) error); ok {
-		r0 = returnFunc(context1, s, achievementsSummary)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *dto.AchievementsSummary, int64) error); ok {
+		r0 = returnFunc(ctx, user, summary, version)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -319,14 +385,15 @@ type MockAchievementCacheClient_SetUserAchievementsSummary_Call struct {
 }
 
 // SetUserAchievementsSummary is a helper method to define mock.On call
-//   - context1 context.Context
-//   - s string
-//   - achievementsSummary *dto.AchievementsSummary
-func (_e *MockAchievementCacheClient_Expecter) SetUserAchievementsSummary(context1 any, s any, achievementsSummary any) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
-	return &MockAchievementCacheClient_SetUserAchievementsSummary_Call{Call: _e.mock.On("SetUserAchievementsSummary", context1, s, achievementsSummary)}
+//   - ctx context.Context
+//   - user string
+//   - summary *dto.AchievementsSummary
+//   - version int64
+func (_e *MockAchievementCacheClient_Expecter) SetUserAchievementsSummary(ctx any, user any, summary any, version any) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
+	return &MockAchievementCacheClient_SetUserAchievementsSummary_Call{Call: _e.mock.On("SetUserAchievementsSummary", ctx, user, summary, version)}
 }
 
-func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) Run(run func(context1 context.Context, s string, achievementsSummary *dto.AchievementsSummary)) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
+func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) Run(run func(ctx context.Context, user string, summary *dto.AchievementsSummary, version int64)) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -340,10 +407,15 @@ func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) Run(run fu
 		if args[2] != nil {
 			arg2 = args[2].(*dto.AchievementsSummary)
 		}
+		var arg3 int64
+		if args[3] != nil {
+			arg3 = args[3].(int64)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -354,7 +426,7 @@ func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) Return(err
 	return _c
 }
 
-func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) RunAndReturn(run func(context1 context.Context, s string, achievementsSummary *dto.AchievementsSummary) error) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
+func (_c *MockAchievementCacheClient_SetUserAchievementsSummary_Call) RunAndReturn(run func(ctx context.Context, user string, summary *dto.AchievementsSummary, version int64) error) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
 	_c.Call.Return(run)
 	return _c
 }

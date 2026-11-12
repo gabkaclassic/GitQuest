@@ -721,6 +721,8 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			setup: func(m mocks) {
 				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
 					Return(nil, nil)
+				m.cache.On("GetUserAchievementsSummaryVersion", mock.Anything, user).
+					Return(int64(3), nil)
 				m.repo.On("GetByUser", mock.Anything, user).
 					Return(&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{
@@ -732,7 +734,7 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 						Achievements: []dto.AchievementInfo{
 							{RuleName: "r3", Reward: 3},
 						},
-					}).Return(nil)
+					}, int64(3)).Return(nil)
 			},
 			expected: &dto.AchievementsSummary{
 				Achievements: []dto.AchievementInfo{
@@ -746,6 +748,8 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			setup: func(m mocks) {
 				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
 					Return(nil, nil)
+				m.cache.On("GetUserAchievementsSummaryVersion", mock.Anything, user).
+					Return(int64(3), nil)
 				m.repo.On("GetByUser", mock.Anything, user).
 					Return(&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{},
@@ -755,7 +759,7 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 					&dto.AchievementsSummary{
 						Achievements: []dto.AchievementInfo{},
 						RewardSum:    0,
-					}).Return(nil)
+					}, int64(3)).Return(nil)
 			},
 			expected: &dto.AchievementsSummary{
 				Achievements: []dto.AchievementInfo{},
@@ -772,10 +776,24 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			expectedErr: api.Internal("Get achievements for user error", errors.New("cache err")),
 		},
 		{
+			name: "version read error",
+			setup: func(m mocks) {
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
+					Return(nil, nil)
+				m.cache.On("GetUserAchievementsSummaryVersion", mock.Anything, user).
+					Return(int64(0), errors.New("ver err"))
+			},
+			expectedErr: api.Internal("Get achievements for user error", errors.New("ver err")),
+		},
+		{
 			name: "repo error",
 			setup: func(m mocks) {
 				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
 					Return(nil, nil)
+				m.cache.On("GetUserAchievementsSummaryVersion", mock.Anything, user).
+					Return(int64(3), nil)
+				m.cache.On("GetUserAchievementsSummaryVersion", mock.Anything, user).
+					Return(int64(3), nil)
 				m.repo.On("GetByUser", mock.Anything, user).
 					Return(nil, errors.New("db err"))
 			},

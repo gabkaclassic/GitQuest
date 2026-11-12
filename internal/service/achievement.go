@@ -96,13 +96,19 @@ func (service *achievementService) GetSummaryByUser(ctx context.Context, user st
 		return summary, nil
 	}
 
+	version, err := service.achievementCacheClient.GetUserAchievementsSummaryVersion(ctx, user)
+
+	if err != nil {
+		return nil, api.Internal("Get achievements for user error", err)
+	}
+
 	summary, err = service.repository.GetByUser(ctx, user)
 
 	if err != nil {
 		return nil, api.Internal("Get achievements for user error", err)
 	}
 
-	service.achievementCacheClient.SetUserAchievementsSummary(ctx, user, summary)
+	service.achievementCacheClient.SetUserAchievementsSummary(ctx, user, summary, version)
 
 	return summary, nil
 }
