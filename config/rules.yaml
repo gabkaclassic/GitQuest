@@ -31,8 +31,8 @@ rules:
   - name: "Streaker"
     description: "Каждый день есть хотя бы один коммит, 7 дней подряд"
     event_type: "commit"
-    window: 24h
-    count: 1
+    window: 168h
+    count: 7
     condition: ">="
     streak: true
     reward: 300
