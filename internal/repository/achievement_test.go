@@ -261,7 +261,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule1", "v1", "user1").
 					WillReturnRows(rows)
 			},
@@ -277,7 +277,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule2", "v2", "user2").
 					WillReturnRows(rows)
 			},
@@ -292,7 +292,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 				RuleVersion: "v3",
 			},
 			mockFn: func() {
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule3", "v3", "user3").
 					WillReturnError(errors.New("database connection error"))
 			},
@@ -309,7 +309,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow("not-a-bool")
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule4", "v4", "user4").
 					WillReturnRows(rows)
 			},
@@ -325,7 +325,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("", "v5", "user5").
 					WillReturnRows(rows)
 			},
@@ -341,7 +341,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule6", "", "user6").
 					WillReturnRows(rows)
 			},
@@ -357,7 +357,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule7", "v7", "").
 					WillReturnRows(rows)
 			},
@@ -382,7 +382,7 @@ func TestAchievementRepository_ExistsInAllTime(t *testing.T) {
 			},
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
-				mock.ExpectQuery("^SELECT EXISTS").
+				mock.ExpectQuery(`^SELECT EXISTS.*AND "user" = \$3`).
 					WithArgs("rule' OR '1'='1", "v1' UNION SELECT * FROM users --", "user'; DROP TABLE achievements; --").
 					WillReturnRows(rows)
 			},

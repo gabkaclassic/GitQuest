@@ -109,7 +109,7 @@ func (repository *achievementRepository) ExistsInAllTime(achievement *dto.Achiev
 	var exists bool
 
 	err := repository.storage.QueryRow(
-		"SELECT EXISTS(SELECT 1 FROM achievements WHERE rule_name = $1 AND rule_version = $2 AND user = $3)",
+		`SELECT EXISTS(SELECT 1 FROM achievements WHERE rule_name = $1 AND rule_version = $2 AND "user" = $3)`,
 		achievement.RuleName, achievement.RuleVersion, achievement.User,
 	).Scan(&exists)
 
