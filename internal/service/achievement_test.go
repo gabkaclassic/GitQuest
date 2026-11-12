@@ -18,6 +18,7 @@ import (
 func TestNewAchievementService(t *testing.T) {
 	mockRepo := &repository.MockAchievementRepository{}
 	mockUserRepo := &repository.MockUserRepository{}
+	mockEventRepo := &repository.MockEventRepository{}
 	mockEventCache := &cache.MockEventCacheClient{}
 	mockUserCache := &cache.MockUserCacheClient{}
 	mockAchievementCache := &cache.MockAchievementCacheClient{}
@@ -27,6 +28,7 @@ func TestNewAchievementService(t *testing.T) {
 		name        string
 		repo        repository.AchievementRepository
 		userRepo    repository.UserRepository
+		eventRepo   repository.EventRepository
 		eventCache  cache.EventCacheClient
 		userCache   cache.UserCacheClient
 		achCache    cache.AchievementCacheClient
@@ -38,6 +40,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "success",
 			repo:        mockRepo,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   mockUserCache,
 			achCache:    mockAchievementCache,
@@ -48,6 +51,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "nil achievement repository",
 			repo:        nil,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   mockUserCache,
 			achCache:    mockAchievementCache,
@@ -59,6 +63,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "nil user repository",
 			repo:        mockRepo,
 			userRepo:    nil,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   mockUserCache,
 			achCache:    mockAchievementCache,
@@ -67,9 +72,22 @@ func TestNewAchievementService(t *testing.T) {
 			errMsg:      "create new achievement service failed: user repository is nil",
 		},
 		{
+			name:        "nil event repository",
+			repo:        mockRepo,
+			userRepo:    mockUserRepo,
+			eventRepo:   nil,
+			eventCache:  mockEventCache,
+			userCache:   mockUserCache,
+			achCache:    mockAchievementCache,
+			notif:       mockNotification,
+			expectedErr: true,
+			errMsg:      "create new achievement service failed: event repository is nil",
+		},
+		{
 			name:        "nil event cache client",
 			repo:        mockRepo,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  nil,
 			userCache:   mockUserCache,
 			achCache:    mockAchievementCache,
@@ -81,6 +99,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "nil user cache client",
 			repo:        mockRepo,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   nil,
 			achCache:    mockAchievementCache,
@@ -92,6 +111,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "nil achievement cache client",
 			repo:        mockRepo,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   mockUserCache,
 			achCache:    nil,
@@ -103,6 +123,7 @@ func TestNewAchievementService(t *testing.T) {
 			name:        "nil notification service",
 			repo:        mockRepo,
 			userRepo:    mockUserRepo,
+			eventRepo:   mockEventRepo,
 			eventCache:  mockEventCache,
 			userCache:   mockUserCache,
 			achCache:    mockAchievementCache,
@@ -117,6 +138,7 @@ func TestNewAchievementService(t *testing.T) {
 			service, err := NewAchievementService(
 				tt.repo,
 				tt.userRepo,
+				tt.eventRepo,
 				tt.eventCache,
 				tt.userCache,
 				tt.achCache,
@@ -267,6 +289,7 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 			service := &achievementService{
 				userCacheClient:        mockObjs.userCache,
 				repository:             mockObjs.repo,
+				eventRepository:        new(repository.MockEventRepository),
 				eventCacheClient:       mockObjs.eventCache,
 				achievementCacheClient: mockObjs.achievementCache,
 				notificationService:    mockObjs.notificationSvc,
@@ -303,10 +326,18 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		Condition: dto.GTE,
 	}
 
+	windowed := rule
+	windowed.Window = 3600
+
+	streak := rule
+	streak.Streak = true
+	streak.Count = 1
+
 	type mocks struct {
 		eventCache       *cache.MockEventCacheClient
 		achievementCache *cache.MockAchievementCacheClient
 		repo             *repository.MockAchievementRepository
+		eventRepo        *repository.MockEventRepository
 	}
 
 	tests := []struct {
@@ -316,19 +347,56 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		expectedOut int
 	}{
 		{
-			name: "events cache error",
+			name: "events cache error on windowed rule",
 			setup: func(m mocks) {
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
 					Return(nil, errors.New("cache error"))
+			},
+			rules:       []dto.Rule{windowed},
+			expectedOut: 0,
+		},
+		{
+			name: "count error",
+			setup: func(m mocks) {
+				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(0, errors.New("db error"))
 			},
 			rules:       []dto.Rule{rule},
 			expectedOut: 0,
 		},
 		{
-			name: "achievement exists in cache",
+			name: "count does not satisfy condition",
+			setup: func(m mocks) {
+				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(0, nil)
+			},
+			rules:       []dto.Rule{rule},
+			expectedOut: 0,
+		},
+		{
+			name: "windowed rule uses cache",
 			setup: func(m mocks) {
 				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
 					Return([]time.Time{time.Now()}, nil)
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil).Maybe()
+			},
+			rules:       []dto.Rule{windowed},
+			expectedOut: 1,
+		},
+		{
+			name: "window 0 streak uses cache",
+			setup: func(m mocks) {
+				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
+					Return([]time.Time{time.Now()}, nil)
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil)
+			},
+			rules:       []dto.Rule{streak},
+			expectedOut: 1,
+		},
+		{
+			name: "achievement exists in cache",
+			setup: func(m mocks) {
+				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(1, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(true, nil)
 			},
 			rules:       []dto.Rule{rule},
@@ -337,8 +405,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		{
 			name: "exists in all time",
 			setup: func(m mocks) {
-				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
-					Return([]time.Time{time.Now()}, nil)
+				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(1, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("ExistsInAllTime", mock.Anything).Return(true, nil)
 			},
@@ -348,8 +415,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		{
 			name: "successful achievement generation",
 			setup: func(m mocks) {
-				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, user, mock.Anything, mock.Anything, mock.Anything).
-					Return([]time.Time{time.Now()}, nil)
+				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(1, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil)
 			},
@@ -364,6 +430,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 				eventCache:       new(cache.MockEventCacheClient),
 				achievementCache: new(cache.MockAchievementCacheClient),
 				repo:             new(repository.MockAchievementRepository),
+				eventRepo:        new(repository.MockEventRepository),
 			}
 
 			tt.setup(mockObjs)
@@ -372,6 +439,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 				eventCacheClient:       mockObjs.eventCache,
 				achievementCacheClient: mockObjs.achievementCache,
 				repository:             mockObjs.repo,
+				eventRepository:        mockObjs.eventRepo,
 			}
 
 			out := make(chan dto.Achievement, 10)
@@ -388,6 +456,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			mockObjs.eventCache.AssertExpectations(t)
 			mockObjs.achievementCache.AssertExpectations(t)
 			mockObjs.repo.AssertExpectations(t)
+			mockObjs.eventRepo.AssertExpectations(t)
 		})
 	}
 }

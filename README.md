@@ -122,7 +122,7 @@ rules:
 | `name` | Unique rule name, shown in achievements |
 | `description` | Text passed to the notification |
 | `event_type` | One of the event types above |
-| `window` | Go duration, up to `720h`. `0s` means no window: every event still stored in Redis counts |
+| `window` | Go duration, up to `720h`. `0s` means all time: events are counted in PostgreSQL. Streak rules always read the last 30 days from Redis |
 | `count` | Threshold for `condition`. For a streak rule, also the number of consecutive days |
 | `condition` | `>`, `>=`, `==`, `<` or `<=`, applied as `events_in_window <condition> count` |
 | `streak` | When `true`, the user needs at least one event on each of the last `count` days (UTC); `window` must cover those days |
@@ -194,10 +194,6 @@ DATABASE_DSN='postgres://gitquest-user:password@localhost:5432/gitquest?sslmode=
 ```
 
 New migrations: `make migrate-create` (needs the [migrate CLI](https://github.com/golang-migrate/migrate)).
-
-## Known limitations
-
-- Redis keeps 30 days of events, so a `0s` window counts the last 30 days, not all history.
 
 ## License
 

@@ -13,6 +13,7 @@ import (
 type EventRepository interface {
 	SaveAll(context.Context, []dto.Event) error
 	GetAllUsersWithEvents(context.Context) ([]string, error)
+	CountByActorAndType(ctx context.Context, actor string, eventType dto.EventType) (int, error)
 }
 
 type eventRepository struct {
@@ -99,4 +100,20 @@ func (repository *eventRepository) GetAllUsersWithEvents(ctx context.Context) ([
 		return nil, err
 	}
 	return users, nil
+}
+
+func (repository *eventRepository) CountByActorAndType(ctx context.Context, actor string, eventType dto.EventType) (int, error) {
+	var count int
+	err := executeWithRetry(func() error {
+		return repository.storage.QueryRowContext(
+			ctx,
+			`SELECT COUNT(*) FROM events WHERE actor = $1 AND type = $2`,
+			actor, eventType,
+		).Scan(&count)
+	})
+
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

@@ -325,6 +325,78 @@ func (_m *MockEventRepository) EXPECT() *MockEventRepository_Expecter {
 	return &MockEventRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByActorAndType provides a mock function for the type MockEventRepository
+func (_mock *MockEventRepository) CountByActorAndType(ctx context.Context, actor string, eventType dto.EventType) (int, error) {
+	ret := _mock.Called(ctx, actor, eventType)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByActorAndType")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType) (int, error)); ok {
+		return returnFunc(ctx, actor, eventType)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, dto.EventType) int); ok {
+		r0 = returnFunc(ctx, actor, eventType)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, dto.EventType) error); ok {
+		r1 = returnFunc(ctx, actor, eventType)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockEventRepository_CountByActorAndType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByActorAndType'
+type MockEventRepository_CountByActorAndType_Call struct {
+	*mock.Call
+}
+
+// CountByActorAndType is a helper method to define mock.On call
+//   - ctx context.Context
+//   - actor string
+//   - eventType dto.EventType
+func (_e *MockEventRepository_Expecter) CountByActorAndType(ctx any, actor any, eventType any) *MockEventRepository_CountByActorAndType_Call {
+	return &MockEventRepository_CountByActorAndType_Call{Call: _e.mock.On("CountByActorAndType", ctx, actor, eventType)}
+}
+
+func (_c *MockEventRepository_CountByActorAndType_Call) Run(run func(ctx context.Context, actor string, eventType dto.EventType)) *MockEventRepository_CountByActorAndType_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 dto.EventType
+		if args[2] != nil {
+			arg2 = args[2].(dto.EventType)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockEventRepository_CountByActorAndType_Call) Return(n int, err error) *MockEventRepository_CountByActorAndType_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockEventRepository_CountByActorAndType_Call) RunAndReturn(run func(ctx context.Context, actor string, eventType dto.EventType) (int, error)) *MockEventRepository_CountByActorAndType_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAllUsersWithEvents provides a mock function for the type MockEventRepository
 func (_mock *MockEventRepository) GetAllUsersWithEvents(context1 context.Context) ([]string, error) {
 	ret := _mock.Called(context1)

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"testing"
@@ -259,6 +260,67 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 				assert.Equal(t, tt.expectData, result)
 			}
 
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
+func TestEventRepository_CountByActorAndType(t *testing.T) {
+	const query = `^SELECT COUNT\(\*\) FROM events WHERE actor = \$1 AND type = \$2`
+
+	tests := []struct {
+		name        string
+		mockFn      func(mock sqlmock.Sqlmock)
+		expected    int
+		expectError bool
+	}{
+		{
+			name: "success",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(query).
+					WithArgs("actor1", "COMMIT").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(7))
+			},
+			expected: 7,
+		},
+		{
+			name: "query error",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(query).
+					WithArgs("actor1", "COMMIT").
+					WillReturnError(errors.New("fail"))
+			},
+			expectError: true,
+		},
+		{
+			name: "scan error",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery(query).
+					WithArgs("actor1", "COMMIT").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow("x"))
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+
+			tt.mockFn(mock)
+
+			repo := &eventRepository{storage: db}
+			count, err := repo.CountByActorAndType(context.Background(), "actor1", dto.EventType("COMMIT"))
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Zero(t, count)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, count)
+			}
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 	}

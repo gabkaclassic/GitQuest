@@ -28,6 +28,7 @@ type AchievementService interface {
 type achievementService struct {
 	repository             repository.AchievementRepository
 	userRepository         repository.UserRepository
+	eventRepository        repository.EventRepository
 	userCacheClient        cache.UserCacheClient
 	eventCacheClient       cache.EventCacheClient
 	achievementCacheClient cache.AchievementCacheClient
@@ -37,6 +38,7 @@ type achievementService struct {
 func NewAchievementService(
 	repository repository.AchievementRepository,
 	userRepository repository.UserRepository,
+	eventRepository repository.EventRepository,
 	eventCacheClient cache.EventCacheClient,
 	userCacheClient cache.UserCacheClient,
 	achievementCacheClient cache.AchievementCacheClient,
@@ -49,6 +51,10 @@ func NewAchievementService(
 
 	if userRepository == nil {
 		return nil, errors.New("create new achievement service failed: user repository is nil")
+	}
+
+	if eventRepository == nil {
+		return nil, errors.New("create new achievement service failed: event repository is nil")
 	}
 
 	if eventCacheClient == nil {
@@ -70,6 +76,7 @@ func NewAchievementService(
 	return &achievementService{
 		repository:             repository,
 		userRepository:         userRepository,
+		eventRepository:        eventRepository,
 		eventCacheClient:       eventCacheClient,
 		userCacheClient:        userCacheClient,
 		achievementCacheClient: achievementCacheClient,
@@ -202,18 +209,30 @@ func (service *achievementService) processUserEvents(
 	for _, rule := range rules {
 		startRange := now.Add(-time.Duration(rule.Window))
 
-		eventsTimestamps, err := service.eventCacheClient.GetUserEventsTimestampsByTypeAndRange(ctx, user, rule.EventType, startRange, now)
-		if err != nil {
-			slog.Error("Failed get users events from cache operation", slog.String("user", user), slog.Any("rule", rule), slog.Any("error", err))
-			continue
-		}
+		if rule.Window == 0 && !rule.Streak {
+			count, err := service.eventRepository.CountByActorAndType(ctx, user, rule.EventType)
+			if err != nil {
+				slog.Error("Failed count user events in DB", slog.String("user", user), slog.Any("rule", rule), slog.Any("error", err))
+				continue
+			}
 
-		if rule.Streak && !checkStreak(eventsTimestamps, rule.Count) {
-			continue
-		}
+			if !rule.Condition.Compare(count, rule.Count) {
+				continue
+			}
+		} else {
+			eventsTimestamps, err := service.eventCacheClient.GetUserEventsTimestampsByTypeAndRange(ctx, user, rule.EventType, startRange, now)
+			if err != nil {
+				slog.Error("Failed get users events from cache operation", slog.String("user", user), slog.Any("rule", rule), slog.Any("error", err))
+				continue
+			}
 
-		if !rule.Condition.Compare(len(eventsTimestamps), rule.Count) {
-			continue
+			if rule.Streak && !checkStreak(eventsTimestamps, rule.Count) {
+				continue
+			}
+
+			if !rule.Condition.Compare(len(eventsTimestamps), rule.Count) {
+				continue
+			}
 		}
 
 		achievement := dto.Achievement{

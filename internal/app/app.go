@@ -273,6 +273,7 @@ func initializeServices(cfg *config.Notification, repositories *repositoriesList
 
 	achievementService, err := service.NewAchievementService(
 		repositories.AchievementRepository, repositories.UserRepository,
+		repositories.EventRepository,
 		cacheClients.eventCacheClient, cacheClients.userCacheClient,
 		cacheClients.achievementCacheClient, notificationService,
 	)
