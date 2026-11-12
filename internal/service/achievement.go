@@ -149,11 +149,13 @@ func (service *achievementService) CheckForNewAchievements(
 		return nil
 	}
 
+	persistCtx := context.WithoutCancel(ctx)
+
 	if err := service.repository.SaveAll(achievements); err != nil {
 		return fmt.Errorf("save new achievements to DB error %w", err)
 	}
 
-	if err := service.achievementCacheClient.SaveAll(ctx, achievements); err != nil {
+	if err := service.achievementCacheClient.SaveAll(persistCtx, achievements); err != nil {
 		return fmt.Errorf("save new achievements to cache error %w", err)
 	}
 
@@ -169,7 +171,7 @@ func (service *achievementService) CheckForNewAchievements(
 		invalidateUsers = append(invalidateUsers, achievement.User)
 	}
 
-	if err := service.achievementCacheClient.InvalidateUserAchievementsSummaries(ctx, invalidateUsers); err != nil {
+	if err := service.achievementCacheClient.InvalidateUserAchievementsSummaries(persistCtx, invalidateUsers); err != nil {
 		slog.Error("Invalidate achievements summary cache error", slog.Any("users", invalidateUsers), slog.Any("error", err))
 	}
 

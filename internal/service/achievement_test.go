@@ -313,6 +313,57 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 	}
 }
 
+func TestAchievementService_CheckForNewAchievements_PersistsAfterCancel(t *testing.T) {
+	user := "user1"
+	rule := dto.Rule{
+		Name:      "rule1",
+		Version:   "1",
+		EventType: "event",
+		Count:     1,
+		Reward:    10,
+		Window:    3600,
+		Condition: dto.GTE,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	userCache := new(cache.MockUserCacheClient)
+	repo := new(repository.MockAchievementRepository)
+	eventCache := new(cache.MockEventCacheClient)
+	achievementCache := new(cache.MockAchievementCacheClient)
+	notificationSvc := new(MockNotificationService)
+
+	alive := mock.MatchedBy(func(c context.Context) bool { return c.Err() == nil })
+
+	userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
+	eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Run(func(mock.Arguments) { cancel() }).
+		Return([]time.Time{time.Now()}, nil)
+	achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+	repo.On("SaveAll", mock.Anything).Return(nil)
+	achievementCache.On("SaveAll", alive, mock.Anything).Return(nil)
+	achievementCache.On("InvalidateUserAchievementsSummaries", alive, []string{user}).Return(nil)
+	notificationSvc.On("Notify", mock.Anything).Return(nil)
+
+	service := &achievementService{
+		userCacheClient:        userCache,
+		repository:             repo,
+		eventRepository:        new(repository.MockEventRepository),
+		eventCacheClient:       eventCache,
+		achievementCacheClient: achievementCache,
+		notificationService:    notificationSvc,
+	}
+
+	err := service.CheckForNewAchievements(ctx, []dto.Rule{rule})
+
+	assert.NoError(t, err)
+	assert.Error(t, ctx.Err())
+	achievementCache.AssertExpectations(t)
+	repo.AssertExpectations(t)
+	notificationSvc.AssertExpectations(t)
+}
+
 func TestAchievementService_processUserEvents(t *testing.T) {
 	user := "user1"
 	rule := dto.Rule{
