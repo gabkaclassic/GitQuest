@@ -345,6 +345,7 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		setup       func(m mocks)
 		rules       []dto.Rule
 		expectedOut int
+		notCalled   func(m mocks, t *testing.T)
 	}{
 		{
 			name: "events cache error on windowed rule",
@@ -358,6 +359,8 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		{
 			name: "count error",
 			setup: func(m mocks) {
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil)
 				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(0, errors.New("db error"))
 			},
 			rules:       []dto.Rule{rule},
@@ -366,7 +369,26 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 		{
 			name: "count does not satisfy condition",
 			setup: func(m mocks) {
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, nil)
 				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(0, nil)
+			},
+			rules:       []dto.Rule{rule},
+			expectedOut: 0,
+		},
+		{
+			name: "all-time cache error skips count",
+			setup: func(m mocks) {
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, errors.New("cache error"))
+			},
+			rules:       []dto.Rule{rule},
+			expectedOut: 0,
+		},
+		{
+			name: "all-time db error skips count",
+			setup: func(m mocks) {
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("ExistsInAllTime", mock.Anything).Return(false, errors.New("db error"))
 			},
 			rules:       []dto.Rule{rule},
 			expectedOut: 0,
@@ -394,23 +416,28 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			expectedOut: 1,
 		},
 		{
-			name: "achievement exists in cache",
+			name: "all-time rule already granted in cache -> no DB count",
 			setup: func(m mocks) {
-				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(1, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(true, nil)
 			},
 			rules:       []dto.Rule{rule},
 			expectedOut: 0,
+			notCalled: func(m mocks, t *testing.T) {
+				m.eventRepo.AssertNotCalled(t, "CountByActorAndType", mock.Anything, mock.Anything, mock.Anything)
+				m.repo.AssertNotCalled(t, "ExistsInAllTime", mock.Anything)
+			},
 		},
 		{
-			name: "exists in all time",
+			name: "all-time rule granted in DB only -> no count",
 			setup: func(m mocks) {
-				m.eventRepo.On("CountByActorAndType", mock.Anything, user, rule.EventType).Return(1, nil)
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("ExistsInAllTime", mock.Anything).Return(true, nil)
 			},
 			rules:       []dto.Rule{rule},
 			expectedOut: 0,
+			notCalled: func(m mocks, t *testing.T) {
+				m.eventRepo.AssertNotCalled(t, "CountByActorAndType", mock.Anything, mock.Anything, mock.Anything)
+			},
 		},
 		{
 			name: "successful achievement generation",
@@ -457,6 +484,9 @@ func TestAchievementService_processUserEvents(t *testing.T) {
 			mockObjs.achievementCache.AssertExpectations(t)
 			mockObjs.repo.AssertExpectations(t)
 			mockObjs.eventRepo.AssertExpectations(t)
+			if tt.notCalled != nil {
+				tt.notCalled(mockObjs, t)
+			}
 		})
 	}
 }

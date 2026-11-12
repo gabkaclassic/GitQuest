@@ -209,7 +209,21 @@ func (service *achievementService) processUserEvents(
 	for _, rule := range rules {
 		startRange := now.Add(-time.Duration(rule.Window))
 
+		achievement := dto.Achievement{
+			User:            user,
+			RuleName:        rule.Name,
+			RuleVersion:     rule.Version,
+			RuleDescription: rule.Description,
+			Reward:          rule.Reward,
+			StartRange:      startRange,
+			EndRange:        now,
+		}
+
 		if rule.Window == 0 && !rule.Streak {
+			if service.alreadyGranted(ctx, user, rule, &achievement) {
+				continue
+			}
+
 			count, err := service.eventRepository.CountByActorAndType(ctx, user, rule.EventType)
 			if err != nil {
 				slog.Error("Failed count user events in DB", slog.String("user", user), slog.Any("rule", rule), slog.Any("error", err))
@@ -233,37 +247,8 @@ func (service *achievementService) processUserEvents(
 			if !rule.Condition.Compare(len(eventsTimestamps), rule.Count) {
 				continue
 			}
-		}
 
-		achievement := dto.Achievement{
-			User:            user,
-			RuleName:        rule.Name,
-			RuleVersion:     rule.Version,
-			RuleDescription: rule.Description,
-			Reward:          rule.Reward,
-			StartRange:      startRange,
-			EndRange:        now,
-		}
-
-		exists, err := service.achievementCacheClient.AchievementExists(ctx, &achievement)
-
-		if err != nil {
-			slog.Error("Failed check achievement exists in cache", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", achievement), slog.Any("error", err))
-			continue
-		}
-
-		if exists {
-			continue
-		}
-
-		if achievement.StartRange.Equal(achievement.EndRange) {
-			exists, err = service.repository.ExistsInAllTime(&achievement)
-			if err != nil {
-				slog.Error("Failed check achievement exists in DB", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", achievement), slog.Any("error", err))
-				continue
-			}
-
-			if exists {
+			if service.alreadyGranted(ctx, user, rule, &achievement) {
 				continue
 			}
 		}
@@ -272,6 +257,30 @@ func (service *achievementService) processUserEvents(
 	}
 
 	return nil
+}
+
+func (service *achievementService) alreadyGranted(ctx context.Context, user string, rule dto.Rule, achievement *dto.Achievement) bool {
+	exists, err := service.achievementCacheClient.AchievementExists(ctx, achievement)
+	if err != nil {
+		slog.Error("Failed check achievement exists in cache", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", *achievement), slog.Any("error", err))
+		return true
+	}
+
+	if exists {
+		return true
+	}
+
+	if !achievement.StartRange.Equal(achievement.EndRange) {
+		return false
+	}
+
+	exists, err = service.repository.ExistsInAllTime(achievement)
+	if err != nil {
+		slog.Error("Failed check achievement exists in DB", slog.String("user", user), slog.Any("rule", rule), slog.Any("achievement", *achievement), slog.Any("error", err))
+		return true
+	}
+
+	return exists
 }
 
 func (service *achievementService) ReevalByDiffs(diffs []dto.RuleDiff) error {
