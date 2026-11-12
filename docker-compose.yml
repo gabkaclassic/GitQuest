@@ -1,6 +1,18 @@
-version: '3.8'
-
 services:
+  gitquest:
+    build: .
+    container_name: gitquest
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gitquest_network
+
   postgres:
     image: postgres:15
     container_name: gitquest_postgres
@@ -12,15 +24,26 @@ services:
       - "5432:5432"
     volumes:
       - gitquest_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gitquest-user -d gitquest"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - gitquest_network
+
   redis:
     image: redis:7.2
-    container_name: redis
+    container_name: gitquest_redis
     volumes:
       - gitquest_redis_data:/data
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - gitquest_network
 
