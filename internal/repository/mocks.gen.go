@@ -18,10 +18,19 @@ func NewMockAchievementRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockAchievementRepository {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockAchievementRepository{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -72,7 +81,7 @@ type MockAchievementRepository_ExistsInAllTime_Call struct {
 
 // ExistsInAllTime is a helper method to define mock.On call
 //   - achievement *dto.Achievement
-func (_e *MockAchievementRepository_Expecter) ExistsInAllTime(achievement interface{}) *MockAchievementRepository_ExistsInAllTime_Call {
+func (_e *MockAchievementRepository_Expecter) ExistsInAllTime(achievement any) *MockAchievementRepository_ExistsInAllTime_Call {
 	return &MockAchievementRepository_ExistsInAllTime_Call{Call: _e.mock.On("ExistsInAllTime", achievement)}
 }
 
@@ -135,7 +144,7 @@ type MockAchievementRepository_GetByUser_Call struct {
 // GetByUser is a helper method to define mock.On call
 //   - context1 context.Context
 //   - s string
-func (_e *MockAchievementRepository_Expecter) GetByUser(context1 interface{}, s interface{}) *MockAchievementRepository_GetByUser_Call {
+func (_e *MockAchievementRepository_Expecter) GetByUser(context1 any, s any) *MockAchievementRepository_GetByUser_Call {
 	return &MockAchievementRepository_GetByUser_Call{Call: _e.mock.On("GetByUser", context1, s)}
 }
 
@@ -202,7 +211,7 @@ type MockAchievementRepository_ReevalByRuleDiff_Call struct {
 
 // ReevalByRuleDiff is a helper method to define mock.On call
 //   - ruleDiff *dto.RuleDiff
-func (_e *MockAchievementRepository_Expecter) ReevalByRuleDiff(ruleDiff interface{}) *MockAchievementRepository_ReevalByRuleDiff_Call {
+func (_e *MockAchievementRepository_Expecter) ReevalByRuleDiff(ruleDiff any) *MockAchievementRepository_ReevalByRuleDiff_Call {
 	return &MockAchievementRepository_ReevalByRuleDiff_Call{Call: _e.mock.On("ReevalByRuleDiff", ruleDiff)}
 }
 
@@ -253,7 +262,7 @@ type MockAchievementRepository_SaveAll_Call struct {
 
 // SaveAll is a helper method to define mock.On call
 //   - achievements []dto.Achievement
-func (_e *MockAchievementRepository_Expecter) SaveAll(achievements interface{}) *MockAchievementRepository_SaveAll_Call {
+func (_e *MockAchievementRepository_Expecter) SaveAll(achievements any) *MockAchievementRepository_SaveAll_Call {
 	return &MockAchievementRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", achievements)}
 }
 
@@ -286,10 +295,19 @@ func NewMockEventRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockEventRepository {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockEventRepository{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -342,7 +360,7 @@ type MockEventRepository_GetAllUsersWithEvents_Call struct {
 
 // GetAllUsersWithEvents is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *MockEventRepository_Expecter) GetAllUsersWithEvents(context1 interface{}) *MockEventRepository_GetAllUsersWithEvents_Call {
+func (_e *MockEventRepository_Expecter) GetAllUsersWithEvents(context1 any) *MockEventRepository_GetAllUsersWithEvents_Call {
 	return &MockEventRepository_GetAllUsersWithEvents_Call{Call: _e.mock.On("GetAllUsersWithEvents", context1)}
 }
 
@@ -394,7 +412,7 @@ type MockEventRepository_SaveAll_Call struct {
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
 //   - events []dto.Event
-func (_e *MockEventRepository_Expecter) SaveAll(context1 interface{}, events interface{}) *MockEventRepository_SaveAll_Call {
+func (_e *MockEventRepository_Expecter) SaveAll(context1 any, events any) *MockEventRepository_SaveAll_Call {
 	return &MockEventRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, events)}
 }
 
@@ -432,10 +450,19 @@ func NewMockRuleRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRuleRepository {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRuleRepository{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -488,7 +515,7 @@ type MockRuleRepository_GetLastRule_Call struct {
 
 // GetLastRule is a helper method to define mock.On call
 //   - s string
-func (_e *MockRuleRepository_Expecter) GetLastRule(s interface{}) *MockRuleRepository_GetLastRule_Call {
+func (_e *MockRuleRepository_Expecter) GetLastRule(s any) *MockRuleRepository_GetLastRule_Call {
 	return &MockRuleRepository_GetLastRule_Call{Call: _e.mock.On("GetLastRule", s)}
 }
 
@@ -551,7 +578,7 @@ type MockRuleRepository_GetRule_Call struct {
 // GetRule is a helper method to define mock.On call
 //   - s string
 //   - s1 string
-func (_e *MockRuleRepository_Expecter) GetRule(s interface{}, s1 interface{}) *MockRuleRepository_GetRule_Call {
+func (_e *MockRuleRepository_Expecter) GetRule(s any, s1 any) *MockRuleRepository_GetRule_Call {
 	return &MockRuleRepository_GetRule_Call{Call: _e.mock.On("GetRule", s, s1)}
 }
 
@@ -607,7 +634,7 @@ type MockRuleRepository_SaveAll_Call struct {
 
 // SaveAll is a helper method to define mock.On call
 //   - rules []dto.Rule
-func (_e *MockRuleRepository_Expecter) SaveAll(rules interface{}) *MockRuleRepository_SaveAll_Call {
+func (_e *MockRuleRepository_Expecter) SaveAll(rules any) *MockRuleRepository_SaveAll_Call {
 	return &MockRuleRepository_SaveAll_Call{Call: _e.mock.On("SaveAll", rules)}
 }
 
@@ -640,10 +667,19 @@ func NewMockUserRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockUserRepository {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockUserRepository{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -694,7 +730,7 @@ type MockUserRepository_ExistsByEmail_Call struct {
 
 // ExistsByEmail is a helper method to define mock.On call
 //   - email string
-func (_e *MockUserRepository_Expecter) ExistsByEmail(email interface{}) *MockUserRepository_ExistsByEmail_Call {
+func (_e *MockUserRepository_Expecter) ExistsByEmail(email any) *MockUserRepository_ExistsByEmail_Call {
 	return &MockUserRepository_ExistsByEmail_Call{Call: _e.mock.On("ExistsByEmail", email)}
 }
 
@@ -754,7 +790,7 @@ type MockUserRepository_GetPasswordByEmail_Call struct {
 
 // GetPasswordByEmail is a helper method to define mock.On call
 //   - email string
-func (_e *MockUserRepository_Expecter) GetPasswordByEmail(email interface{}) *MockUserRepository_GetPasswordByEmail_Call {
+func (_e *MockUserRepository_Expecter) GetPasswordByEmail(email any) *MockUserRepository_GetPasswordByEmail_Call {
 	return &MockUserRepository_GetPasswordByEmail_Call{Call: _e.mock.On("GetPasswordByEmail", email)}
 }
 
@@ -816,7 +852,7 @@ type MockUserRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - user *dto.User
-func (_e *MockUserRepository_Expecter) Save(user interface{}) *MockUserRepository_Save_Call {
+func (_e *MockUserRepository_Expecter) Save(user any) *MockUserRepository_Save_Call {
 	return &MockUserRepository_Save_Call{Call: _e.mock.On("Save", user)}
 }
 

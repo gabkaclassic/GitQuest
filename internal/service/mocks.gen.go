@@ -19,10 +19,19 @@ func NewMockAchievementService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockAchievementService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockAchievementService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -65,7 +74,7 @@ type MockAchievementService_CheckForNewAchievements_Call struct {
 // CheckForNewAchievements is a helper method to define mock.On call
 //   - context1 context.Context
 //   - rules []dto.Rule
-func (_e *MockAchievementService_Expecter) CheckForNewAchievements(context1 interface{}, rules interface{}) *MockAchievementService_CheckForNewAchievements_Call {
+func (_e *MockAchievementService_Expecter) CheckForNewAchievements(context1 any, rules any) *MockAchievementService_CheckForNewAchievements_Call {
 	return &MockAchievementService_CheckForNewAchievements_Call{Call: _e.mock.On("CheckForNewAchievements", context1, rules)}
 }
 
@@ -135,7 +144,7 @@ type MockAchievementService_GetSummaryByUser_Call struct {
 // GetSummaryByUser is a helper method to define mock.On call
 //   - context1 context.Context
 //   - s string
-func (_e *MockAchievementService_Expecter) GetSummaryByUser(context1 interface{}, s interface{}) *MockAchievementService_GetSummaryByUser_Call {
+func (_e *MockAchievementService_Expecter) GetSummaryByUser(context1 any, s any) *MockAchievementService_GetSummaryByUser_Call {
 	return &MockAchievementService_GetSummaryByUser_Call{Call: _e.mock.On("GetSummaryByUser", context1, s)}
 }
 
@@ -191,7 +200,7 @@ type MockAchievementService_ReevalByDiffs_Call struct {
 
 // ReevalByDiffs is a helper method to define mock.On call
 //   - ruleDiffs []dto.RuleDiff
-func (_e *MockAchievementService_Expecter) ReevalByDiffs(ruleDiffs interface{}) *MockAchievementService_ReevalByDiffs_Call {
+func (_e *MockAchievementService_Expecter) ReevalByDiffs(ruleDiffs any) *MockAchievementService_ReevalByDiffs_Call {
 	return &MockAchievementService_ReevalByDiffs_Call{Call: _e.mock.On("ReevalByDiffs", ruleDiffs)}
 }
 
@@ -224,10 +233,19 @@ func NewMockEventService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockEventService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockEventService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -269,7 +287,7 @@ type MockEventService_LoadUsersToCache_Call struct {
 
 // LoadUsersToCache is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *MockEventService_Expecter) LoadUsersToCache(context1 interface{}) *MockEventService_LoadUsersToCache_Call {
+func (_e *MockEventService_Expecter) LoadUsersToCache(context1 any) *MockEventService_LoadUsersToCache_Call {
 	return &MockEventService_LoadUsersToCache_Call{Call: _e.mock.On("LoadUsersToCache", context1)}
 }
 
@@ -323,7 +341,7 @@ type MockEventService_SaveAll_Call struct {
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
 //   - events []dto.Event
-func (_e *MockEventService_Expecter) SaveAll(context1 interface{}, events interface{}) *MockEventService_SaveAll_Call {
+func (_e *MockEventService_Expecter) SaveAll(context1 any, events any) *MockEventService_SaveAll_Call {
 	return &MockEventService_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, events)}
 }
 
@@ -361,10 +379,19 @@ func NewMockNotificationService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockNotificationService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockNotificationService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -406,7 +433,7 @@ type MockNotificationService_Notify_Call struct {
 
 // Notify is a helper method to define mock.On call
 //   - notifications []dto.Notification
-func (_e *MockNotificationService_Expecter) Notify(notifications interface{}) *MockNotificationService_Notify_Call {
+func (_e *MockNotificationService_Expecter) Notify(notifications any) *MockNotificationService_Notify_Call {
 	return &MockNotificationService_Notify_Call{Call: _e.mock.On("Notify", notifications)}
 }
 
@@ -439,10 +466,19 @@ func NewMockRuleService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRuleService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRuleService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -541,7 +577,7 @@ type MockRuleService_GetRulesDiffs_Call struct {
 
 // GetRulesDiffs is a helper method to define mock.On call
 //   - rules []dto.Rule
-func (_e *MockRuleService_Expecter) GetRulesDiffs(rules interface{}) *MockRuleService_GetRulesDiffs_Call {
+func (_e *MockRuleService_Expecter) GetRulesDiffs(rules any) *MockRuleService_GetRulesDiffs_Call {
 	return &MockRuleService_GetRulesDiffs_Call{Call: _e.mock.On("GetRulesDiffs", rules)}
 }
 
@@ -592,7 +628,7 @@ type MockRuleService_SaveAll_Call struct {
 
 // SaveAll is a helper method to define mock.On call
 //   - rules []dto.Rule
-func (_e *MockRuleService_Expecter) SaveAll(rules interface{}) *MockRuleService_SaveAll_Call {
+func (_e *MockRuleService_Expecter) SaveAll(rules any) *MockRuleService_SaveAll_Call {
 	return &MockRuleService_SaveAll_Call{Call: _e.mock.On("SaveAll", rules)}
 }
 
@@ -625,10 +661,19 @@ func NewMockUserService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockUserService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockUserService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -673,7 +718,7 @@ type MockUserService_Authenticate_Call struct {
 // Authenticate is a helper method to define mock.On call
 //   - email string
 //   - password string
-func (_e *MockUserService_Expecter) Authenticate(email interface{}, password interface{}) *MockUserService_Authenticate_Call {
+func (_e *MockUserService_Expecter) Authenticate(email any, password any) *MockUserService_Authenticate_Call {
 	return &MockUserService_Authenticate_Call{Call: _e.mock.On("Authenticate", email, password)}
 }
 
@@ -743,7 +788,7 @@ type MockUserService_Register_Call struct {
 // Register is a helper method to define mock.On call
 //   - email string
 //   - password string
-func (_e *MockUserService_Expecter) Register(email interface{}, password interface{}) *MockUserService_Register_Call {
+func (_e *MockUserService_Expecter) Register(email any, password any) *MockUserService_Register_Call {
 	return &MockUserService_Register_Call{Call: _e.mock.On("Register", email, password)}
 }
 

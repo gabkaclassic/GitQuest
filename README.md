@@ -183,7 +183,7 @@ make hooks   # enable git hooks: gofmt on commit, tests on push
 make build   # binaries in ./build
 make test    # tests with a coverage report
 make lint    # go vet and gofmt check
-make mocks   # regenerate mocks with mockery
+make mocks   # regenerate mocks (mockery v3)
 ```
 
 To run the service outside Docker, start only the dependencies with `docker compose up -d postgres redis`, then:

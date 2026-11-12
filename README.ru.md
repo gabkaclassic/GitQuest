@@ -183,7 +183,7 @@ make hooks   # включить git-хуки: gofmt при коммите, те�
 make build   # бинарники в ./build
 make test    # тесты с отчётом о покрытии
 make lint    # go vet и проверка gofmt
-make mocks   # перегенерировать моки через mockery
+make mocks   # перегенерировать моки (mockery v3)
 ```
 
 Чтобы запустить сервис без Docker, поднимите только зависимости (`docker compose up -d postgres redis`) и выполните:

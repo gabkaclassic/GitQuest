@@ -18,10 +18,19 @@ func NewMockAchievementCacheClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockAchievementCacheClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockAchievementCacheClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -73,7 +82,7 @@ type MockAchievementCacheClient_AchievementExists_Call struct {
 // AchievementExists is a helper method to define mock.On call
 //   - context1 context.Context
 //   - achievement *dto.Achievement
-func (_e *MockAchievementCacheClient_Expecter) AchievementExists(context1 interface{}, achievement interface{}) *MockAchievementCacheClient_AchievementExists_Call {
+func (_e *MockAchievementCacheClient_Expecter) AchievementExists(context1 any, achievement any) *MockAchievementCacheClient_AchievementExists_Call {
 	return &MockAchievementCacheClient_AchievementExists_Call{Call: _e.mock.On("AchievementExists", context1, achievement)}
 }
 
@@ -141,7 +150,7 @@ type MockAchievementCacheClient_GetUserAchievementsSummary_Call struct {
 // GetUserAchievementsSummary is a helper method to define mock.On call
 //   - context1 context.Context
 //   - s string
-func (_e *MockAchievementCacheClient_Expecter) GetUserAchievementsSummary(context1 interface{}, s interface{}) *MockAchievementCacheClient_GetUserAchievementsSummary_Call {
+func (_e *MockAchievementCacheClient_Expecter) GetUserAchievementsSummary(context1 any, s any) *MockAchievementCacheClient_GetUserAchievementsSummary_Call {
 	return &MockAchievementCacheClient_GetUserAchievementsSummary_Call{Call: _e.mock.On("GetUserAchievementsSummary", context1, s)}
 }
 
@@ -198,7 +207,7 @@ type MockAchievementCacheClient_SaveAll_Call struct {
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
 //   - achievements []dto.Achievement
-func (_e *MockAchievementCacheClient_Expecter) SaveAll(context1 interface{}, achievements interface{}) *MockAchievementCacheClient_SaveAll_Call {
+func (_e *MockAchievementCacheClient_Expecter) SaveAll(context1 any, achievements any) *MockAchievementCacheClient_SaveAll_Call {
 	return &MockAchievementCacheClient_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, achievements)}
 }
 
@@ -256,7 +265,7 @@ type MockAchievementCacheClient_SetUserAchievementsSummary_Call struct {
 //   - context1 context.Context
 //   - s string
 //   - achievementsSummary *dto.AchievementsSummary
-func (_e *MockAchievementCacheClient_Expecter) SetUserAchievementsSummary(context1 interface{}, s interface{}, achievementsSummary interface{}) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
+func (_e *MockAchievementCacheClient_Expecter) SetUserAchievementsSummary(context1 any, s any, achievementsSummary any) *MockAchievementCacheClient_SetUserAchievementsSummary_Call {
 	return &MockAchievementCacheClient_SetUserAchievementsSummary_Call{Call: _e.mock.On("SetUserAchievementsSummary", context1, s, achievementsSummary)}
 }
 
@@ -299,10 +308,19 @@ func NewMockEventCacheClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockEventCacheClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockEventCacheClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -344,7 +362,7 @@ type MockEventCacheClient_CleanupOldEventsFromCache_Call struct {
 
 // CleanupOldEventsFromCache is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *MockEventCacheClient_Expecter) CleanupOldEventsFromCache(context1 interface{}) *MockEventCacheClient_CleanupOldEventsFromCache_Call {
+func (_e *MockEventCacheClient_Expecter) CleanupOldEventsFromCache(context1 any) *MockEventCacheClient_CleanupOldEventsFromCache_Call {
 	return &MockEventCacheClient_CleanupOldEventsFromCache_Call{Call: _e.mock.On("CleanupOldEventsFromCache", context1)}
 }
 
@@ -410,7 +428,7 @@ type MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call struct {
 //   - eventType dto.EventType
 //   - time1 time.Time
 //   - time11 time.Time
-func (_e *MockEventCacheClient_Expecter) GetUserEventsTimestampsByTypeAndRange(context1 interface{}, s interface{}, eventType interface{}, time1 interface{}, time11 interface{}) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
+func (_e *MockEventCacheClient_Expecter) GetUserEventsTimestampsByTypeAndRange(context1 any, s any, eventType any, time1 any, time11 any) *MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call {
 	return &MockEventCacheClient_GetUserEventsTimestampsByTypeAndRange_Call{Call: _e.mock.On("GetUserEventsTimestampsByTypeAndRange", context1, s, eventType, time1, time11)}
 }
 
@@ -493,7 +511,7 @@ type MockEventCacheClient_SaveNewEvents_Call struct {
 // SaveNewEvents is a helper method to define mock.On call
 //   - context1 context.Context
 //   - events []dto.Event
-func (_e *MockEventCacheClient_Expecter) SaveNewEvents(context1 interface{}, events interface{}) *MockEventCacheClient_SaveNewEvents_Call {
+func (_e *MockEventCacheClient_Expecter) SaveNewEvents(context1 any, events any) *MockEventCacheClient_SaveNewEvents_Call {
 	return &MockEventCacheClient_SaveNewEvents_Call{Call: _e.mock.On("SaveNewEvents", context1, events)}
 }
 
@@ -531,10 +549,19 @@ func NewMockUserCacheClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockUserCacheClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockUserCacheClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -587,7 +614,7 @@ type MockUserCacheClient_GetAll_Call struct {
 
 // GetAll is a helper method to define mock.On call
 //   - context1 context.Context
-func (_e *MockUserCacheClient_Expecter) GetAll(context1 interface{}) *MockUserCacheClient_GetAll_Call {
+func (_e *MockUserCacheClient_Expecter) GetAll(context1 any) *MockUserCacheClient_GetAll_Call {
 	return &MockUserCacheClient_GetAll_Call{Call: _e.mock.On("GetAll", context1)}
 }
 
@@ -639,7 +666,7 @@ type MockUserCacheClient_Save_Call struct {
 // Save is a helper method to define mock.On call
 //   - context1 context.Context
 //   - s string
-func (_e *MockUserCacheClient_Expecter) Save(context1 interface{}, s interface{}) *MockUserCacheClient_Save_Call {
+func (_e *MockUserCacheClient_Expecter) Save(context1 any, s any) *MockUserCacheClient_Save_Call {
 	return &MockUserCacheClient_Save_Call{Call: _e.mock.On("Save", context1, s)}
 }
 
@@ -696,7 +723,7 @@ type MockUserCacheClient_SaveAll_Call struct {
 // SaveAll is a helper method to define mock.On call
 //   - context1 context.Context
 //   - strings []string
-func (_e *MockUserCacheClient_Expecter) SaveAll(context1 interface{}, strings interface{}) *MockUserCacheClient_SaveAll_Call {
+func (_e *MockUserCacheClient_Expecter) SaveAll(context1 any, strings any) *MockUserCacheClient_SaveAll_Call {
 	return &MockUserCacheClient_SaveAll_Call{Call: _e.mock.On("SaveAll", context1, strings)}
 }
 
