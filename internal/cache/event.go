@@ -76,7 +76,7 @@ func (client *eventCacheClient) SaveNewEvents(ctx context.Context, events []dto.
 			ctx, fmt.Sprintf("%s:%s:%s", eventKeyPrefix, event.Actor, event.EventType),
 			redis.Z{
 				Score:  float64(event.Timestamp.Unix()),
-				Member: float64(event.Timestamp.Unix()),
+				Member: event.ID,
 			},
 		)
 		if _, exists := usersSet[event.Actor]; !exists {
@@ -102,7 +102,7 @@ func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx contex
 		maxScore = strconv.FormatInt(endRange.Unix(), 10)
 	}
 
-	timestampStrs, err := client.storage.ZRangeByScore(
+	entries, err := client.storage.ZRangeByScoreWithScores(
 		ctx,
 		fmt.Sprintf("%s:%s:%s", eventKeyPrefix, user, eventType),
 		&redis.ZRangeBy{
@@ -114,12 +114,8 @@ func (client *eventCacheClient) GetUserEventsTimestampsByTypeAndRange(ctx contex
 		return nil, err
 	}
 
-	for _, timestampStr := range timestampStrs {
-		unixTime, err := strconv.ParseInt(timestampStr, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse timestamp: %w", err)
-		}
-		timestamps = append(timestamps, time.Unix(unixTime, 0))
+	for _, entry := range entries {
+		timestamps = append(timestamps, time.Unix(int64(entry.Score), 0))
 	}
 
 	return timestamps, nil

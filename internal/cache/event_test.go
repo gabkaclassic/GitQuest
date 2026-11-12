@@ -184,22 +184,22 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  100,
-					Member: float64(100),
+					Member: "id100",
 				}).SetVal(1)
 				mock.ExpectZAdd("event:user1:IssueEvent", redis.Z{
 					Score:  200,
-					Member: float64(200),
+					Member: "id200",
 				}).SetVal(1)
 				mock.ExpectZAdd("event:user2:PushEvent", redis.Z{
 					Score:  300,
-					Member: float64(300),
+					Member: "id300",
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input: []dto.Event{
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
-				{Actor: "user1", EventType: "IssueEvent", Timestamp: time.Unix(200, 0)},
-				{Actor: "user2", EventType: "PushEvent", Timestamp: time.Unix(300, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id100", Timestamp: time.Unix(100, 0)},
+				{Actor: "user1", EventType: "IssueEvent", ID: "id200", Timestamp: time.Unix(200, 0)},
+				{Actor: "user2", EventType: "PushEvent", ID: "id300", Timestamp: time.Unix(300, 0)},
 			},
 			expected:    []string{"user1", "user2"},
 			expectError: false,
@@ -210,12 +210,12 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  100,
-					Member: float64(100),
+					Member: "id100",
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input: []dto.Event{
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id100", Timestamp: time.Unix(100, 0)},
 			},
 			expected:    []string{"user1"},
 			expectError: false,
@@ -226,12 +226,12 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  100,
-					Member: float64(100),
+					Member: "id100",
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec().SetErr(errors.New("pipeline error"))
 			},
 			input: []dto.Event{
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id100", Timestamp: time.Unix(100, 0)},
 			},
 			expected:    []string{"user1"},
 			expectError: true,
@@ -256,22 +256,22 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  100,
-					Member: float64(100),
+					Member: "id100",
 				}).SetVal(1)
 				mock.ExpectZAdd("event:user1:IssueEvent", redis.Z{
 					Score:  200,
-					Member: float64(200),
+					Member: "id200",
 				}).SetVal(1)
 				mock.ExpectZAdd("event:user1:PullRequestEvent", redis.Z{
 					Score:  300,
-					Member: float64(300),
+					Member: "id300",
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input: []dto.Event{
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
-				{Actor: "user1", EventType: "IssueEvent", Timestamp: time.Unix(200, 0)},
-				{Actor: "user1", EventType: "PullRequestEvent", Timestamp: time.Unix(300, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id100", Timestamp: time.Unix(100, 0)},
+				{Actor: "user1", EventType: "IssueEvent", ID: "id200", Timestamp: time.Unix(200, 0)},
+				{Actor: "user1", EventType: "PullRequestEvent", ID: "id300", Timestamp: time.Unix(300, 0)},
 			},
 			expected:    []string{"user1"},
 			expectError: false,
@@ -282,17 +282,38 @@ func TestEventCacheClient_SaveNewEvents(t *testing.T) {
 				mock.ExpectTxPipeline()
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  100,
-					Member: float64(100),
+					Member: "id100",
 				}).SetVal(1)
 				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
 					Score:  200,
-					Member: float64(200),
+					Member: "id200",
 				}).SetVal(1)
 				mock.ExpectTxPipelineExec()
 			},
 			input: []dto.Event{
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
-				{Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(200, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id100", Timestamp: time.Unix(100, 0)},
+				{Actor: "user1", EventType: "PushEvent", ID: "id200", Timestamp: time.Unix(200, 0)},
+			},
+			expected:    []string{"user1"},
+			expectError: false,
+		},
+		{
+			name: "two events same second distinct IDs",
+			mockFn: func() {
+				mock.ExpectTxPipeline()
+				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
+					Score:  100,
+					Member: "a",
+				}).SetVal(1)
+				mock.ExpectZAdd("event:user1:PushEvent", redis.Z{
+					Score:  100,
+					Member: "b",
+				}).SetVal(1)
+				mock.ExpectTxPipelineExec()
+			},
+			input: []dto.Event{
+				{ID: "a", Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
+				{ID: "b", Actor: "user1", EventType: "PushEvent", Timestamp: time.Unix(100, 0)},
 			},
 			expected:    []string{"user1"},
 			expectError: false,
@@ -334,10 +355,10 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "success specific range",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user1:PushEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user1:PushEvent", &redis.ZRangeBy{
 					Min: "100",
 					Max: "200",
-				}).SetVal([]string{"100", "150", "200"})
+				}).SetVal([]redis.Z{{Score: 100, Member: "100"}, {Score: 150, Member: "150"}, {Score: 200, Member: "200"}})
 			},
 			user:       "user1",
 			eventType:  "PushEvent",
@@ -353,10 +374,10 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "success equal times with inf range",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user2:IssueEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user2:IssueEvent", &redis.ZRangeBy{
 					Min: "-inf",
 					Max: "+inf",
-				}).SetVal([]string{"300", "400"})
+				}).SetVal([]redis.Z{{Score: 300, Member: "300"}, {Score: 400, Member: "400"}})
 			},
 			user:       "user2",
 			eventType:  "IssueEvent",
@@ -371,10 +392,10 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "success empty result",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user3:PullRequestEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user3:PullRequestEvent", &redis.ZRangeBy{
 					Min: "1000",
 					Max: "2000",
-				}).SetVal([]string{})
+				}).SetVal([]redis.Z{})
 			},
 			user:        "user3",
 			eventType:   "PullRequestEvent",
@@ -386,7 +407,7 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "zrangebyscore failure",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user1:PushEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user1:PushEvent", &redis.ZRangeBy{
 					Min: "100",
 					Max: "200",
 				}).SetErr(errors.New("redis error"))
@@ -399,27 +420,12 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name: "parse timestamp failure",
-			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user4:PushEvent", &redis.ZRangeBy{
-					Min: "100",
-					Max: "200",
-				}).SetVal([]string{"100", "invalid", "200"})
-			},
-			user:        "user4",
-			eventType:   "PushEvent",
-			startRange:  time.Unix(100, 0),
-			endRange:    time.Unix(200, 0),
-			expected:    nil,
-			expectError: true,
-		},
-		{
 			name: "success - single timestamp",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user5:PushEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user5:PushEvent", &redis.ZRangeBy{
 					Min: "500",
 					Max: "600",
-				}).SetVal([]string{"550"})
+				}).SetVal([]redis.Z{{Score: 550, Member: "550"}})
 			},
 			user:       "user5",
 			eventType:  "PushEvent",
@@ -433,10 +439,10 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "success - negative infinity range",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user6:IssueEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user6:IssueEvent", &redis.ZRangeBy{
 					Min: "-inf",
 					Max: "+inf",
-				}).SetVal([]string{"1", "2", "3"})
+				}).SetVal([]redis.Z{{Score: 1, Member: "1"}, {Score: 2, Member: "2"}, {Score: 3, Member: "3"}})
 			},
 			user:       "user6",
 			eventType:  "IssueEvent",
@@ -452,10 +458,10 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 		{
 			name: "success zero to infinity range",
 			mockFn: func() {
-				mock.ExpectZRangeByScore("event:user7:PullRequestEvent", &redis.ZRangeBy{
+				mock.ExpectZRangeByScoreWithScores("event:user7:PullRequestEvent", &redis.ZRangeBy{
 					Min: "-inf",
 					Max: "+inf",
-				}).SetVal([]string{"100", "200"})
+				}).SetVal([]redis.Z{{Score: 100, Member: "100"}, {Score: 200, Member: "200"}})
 			},
 			user:       "user7",
 			eventType:  "PullRequestEvent",
@@ -464,6 +470,23 @@ func TestEventCacheClient_GetUserEventsTimestampsByTypeAndRange(t *testing.T) {
 			expected: []time.Time{
 				time.Unix(100, 0),
 				time.Unix(200, 0),
+			},
+			expectError: false,
+		},
+		{
+			name: "legacy numeric member equal to score",
+			mockFn: func() {
+				mock.ExpectZRangeByScoreWithScores("event:user8:PushEvent", &redis.ZRangeBy{
+					Min: "100",
+					Max: "200",
+				}).SetVal([]redis.Z{{Score: 100, Member: "100"}})
+			},
+			user:       "user8",
+			eventType:  "PushEvent",
+			startRange: time.Unix(100, 0),
+			endRange:   time.Unix(200, 0),
+			expected: []time.Time{
+				time.Unix(100, 0),
 			},
 			expectError: false,
 		},
