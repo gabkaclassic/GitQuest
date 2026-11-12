@@ -11,7 +11,6 @@ import (
 	"github.com/gabkaclassic/GitQuest/internal/cache"
 	"github.com/gabkaclassic/GitQuest/internal/dto"
 	"github.com/gabkaclassic/GitQuest/internal/repository"
-	"github.com/gabkaclassic/GitQuest/internal/storage"
 	api "github.com/gabkaclassic/metrics/pkg/error"
 	"github.com/google/uuid"
 )
@@ -93,12 +92,6 @@ func (service *achievementService) GetSummaryByUser(ctx context.Context, user st
 	summary, err = service.repository.GetByUser(ctx, user)
 
 	if err != nil {
-		if storage.IsNotFoundError(err) {
-			summary = &dto.AchievementsSummary{
-				Achievements: []dto.AchievementInfo{},
-			}
-		}
-
 		return nil, api.Internal("Get achievements for user error", err)
 	}
 

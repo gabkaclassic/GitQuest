@@ -569,6 +569,28 @@ func TestAchievementService_GetSummaryByUser(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
+			name: "cache miss, repo empty",
+			setup: func(m mocks) {
+				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
+					Return(nil, nil)
+				m.repo.On("GetByUser", mock.Anything, user).
+					Return(&dto.AchievementsSummary{
+						Achievements: []dto.AchievementInfo{},
+						RewardSum:    0,
+					}, nil)
+				m.cache.On("SetUserAchievementsSummary", mock.Anything, user,
+					&dto.AchievementsSummary{
+						Achievements: []dto.AchievementInfo{},
+						RewardSum:    0,
+					}).Return(nil)
+			},
+			expected: &dto.AchievementsSummary{
+				Achievements: []dto.AchievementInfo{},
+				RewardSum:    0,
+			},
+			expectedErr: nil,
+		},
+		{
 			name: "cache error",
 			setup: func(m mocks) {
 				m.cache.On("GetUserAchievementsSummary", mock.Anything, user).
