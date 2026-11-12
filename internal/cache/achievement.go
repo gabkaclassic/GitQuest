@@ -24,6 +24,7 @@ type AchievementCacheClient interface {
 	AchievementExists(context.Context, *dto.Achievement) (bool, error)
 	GetUserAchievementsSummary(context.Context, string) (*dto.AchievementsSummary, error)
 	SetUserAchievementsSummary(context.Context, string, *dto.AchievementsSummary) error
+	InvalidateUserAchievementsSummaries(ctx context.Context, users []string) error
 }
 
 type achievementCacheClient struct {
@@ -141,4 +142,18 @@ func (client *achievementCacheClient) AchievementExists(ctx context.Context, ach
 	}
 
 	return len(vals) > 0, nil
+}
+
+func (client *achievementCacheClient) InvalidateUserAchievementsSummaries(ctx context.Context, users []string) error {
+	if len(users) == 0 {
+		return nil
+	}
+
+	keys := make([]string, len(users))
+
+	for ind, user := range users {
+		keys[ind] = fmt.Sprintf("%s:%s", summaryKeyPrefix, user)
+	}
+
+	return client.storage.Del(ctx, keys...).Err()
 }

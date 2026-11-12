@@ -198,7 +198,6 @@ DATABASE_DSN='postgres://gitquest-user:password@localhost:5432/gitquest?sslmode=
 ## Известные ограничения
 
 - Redis хранит события за 30 дней, поэтому окно `0s` считает последние 30 дней, а не всю историю.
-- `GET /achievement/{user}` кэширует ответ на 5 минут, и новые ачивки этот кэш не сбрасывают.
 
 ## Лицензия
 

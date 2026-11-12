@@ -214,6 +214,7 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(nil)
 				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(nil)
+				m.achievementCache.On("InvalidateUserAchievementsSummaries", mock.Anything, []string{user}).Return(nil)
 				m.notificationSvc.On("Notify", mock.Anything).Return(errors.New("notify error"))
 			},
 			rules:     []dto.Rule{rule},
@@ -228,6 +229,22 @@ func TestAchievementService_CheckForNewAchievements(t *testing.T) {
 				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
 				m.repo.On("SaveAll", mock.Anything).Return(nil)
 				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(nil)
+				m.achievementCache.On("InvalidateUserAchievementsSummaries", mock.Anything, []string{user}).Return(nil)
+				m.notificationSvc.On("Notify", mock.Anything).Return(nil)
+			},
+			rules:     []dto.Rule{rule},
+			expectErr: "",
+		},
+		{
+			name: "invalidate error does not abort notifications",
+			setup: func(m mocks) {
+				m.userCache.On("GetAll", mock.Anything).Return([]string{user}, nil)
+				m.eventCache.On("GetUserEventsTimestampsByTypeAndRange", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return([]time.Time{time.Now()}, nil)
+				m.achievementCache.On("AchievementExists", mock.Anything, mock.Anything).Return(false, nil)
+				m.repo.On("SaveAll", mock.Anything).Return(nil)
+				m.achievementCache.On("SaveAll", mock.Anything, mock.Anything).Return(nil)
+				m.achievementCache.On("InvalidateUserAchievementsSummaries", mock.Anything, []string{user}).Return(errors.New("redis down"))
 				m.notificationSvc.On("Notify", mock.Anything).Return(nil)
 			},
 			rules:     []dto.Rule{rule},
@@ -382,8 +399,9 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 	}
 
 	type mocks struct {
-		repo            *repository.MockAchievementRepository
-		notificationSvc *MockNotificationService
+		repo             *repository.MockAchievementRepository
+		achievementCache *cache.MockAchievementCacheClient
+		notificationSvc  *MockNotificationService
 	}
 
 	tests := []struct {
@@ -402,6 +420,7 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 			name: "notify error",
 			setup: func(m mocks) {
 				m.repo.On("ReevalByRuleDiff", diff).Return([]string{"user1", "user2"}, nil)
+				m.achievementCache.On("InvalidateUserAchievementsSummaries", mock.Anything, []string{"user1", "user2"}).Return(nil)
 				m.notificationSvc.On("Notify", mock.Anything).Return(errors.New("notify error"))
 			},
 			expectErr: "notify error",
@@ -410,6 +429,7 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 			name: "successful path",
 			setup: func(m mocks) {
 				m.repo.On("ReevalByRuleDiff", diff).Return([]string{"user1"}, nil)
+				m.achievementCache.On("InvalidateUserAchievementsSummaries", mock.Anything, []string{"user1"}).Return(nil)
 				m.notificationSvc.On("Notify", mock.Anything).Return(nil)
 			},
 			expectErr: "",
@@ -419,15 +439,17 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockObjs := mocks{
-				repo:            new(repository.MockAchievementRepository),
-				notificationSvc: new(MockNotificationService),
+				repo:             new(repository.MockAchievementRepository),
+				achievementCache: new(cache.MockAchievementCacheClient),
+				notificationSvc:  new(MockNotificationService),
 			}
 
 			tt.setup(mockObjs)
 
 			service := &achievementService{
-				repository:          mockObjs.repo,
-				notificationService: mockObjs.notificationSvc,
+				repository:             mockObjs.repo,
+				achievementCacheClient: mockObjs.achievementCache,
+				notificationService:    mockObjs.notificationSvc,
 			}
 
 			err := service.reevalByDiff(diff)
@@ -440,6 +462,7 @@ func TestAchievementService_reevalByDiff(t *testing.T) {
 			}
 
 			mockObjs.repo.AssertExpectations(t)
+			mockObjs.achievementCache.AssertExpectations(t)
 			mockObjs.notificationSvc.AssertExpectations(t)
 		})
 	}

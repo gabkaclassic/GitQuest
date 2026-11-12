@@ -361,3 +361,52 @@ func TestAchievementCacheClient_AchievementExists(t *testing.T) {
 		})
 	}
 }
+
+func TestAchievementCacheClient_InvalidateUserAchievementsSummaries(t *testing.T) {
+	db, mock := redismock.NewClientMock()
+	client := &achievementCacheClient{storage: db}
+	ctx := context.Background()
+
+	tests := []struct {
+		name        string
+		mockFn      func()
+		input       []string
+		expectError bool
+	}{
+		{
+			name: "success",
+			mockFn: func() {
+				mock.ExpectDel("summary:u1", "summary:u2").SetVal(2)
+			},
+			input: []string{"u1", "u2"},
+		},
+		{
+			name: "redis error",
+			mockFn: func() {
+				mock.ExpectDel("summary:u1").SetErr(errors.New("fail"))
+			},
+			input:       []string{"u1"},
+			expectError: true,
+		},
+		{
+			name:   "empty users",
+			mockFn: func() {},
+			input:  []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockFn()
+			err := client.InvalidateUserAchievementsSummaries(ctx, tt.input)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}

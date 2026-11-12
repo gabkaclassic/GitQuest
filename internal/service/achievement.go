@@ -150,6 +150,22 @@ func (service *achievementService) CheckForNewAchievements(
 		return fmt.Errorf("save new achievements to cache error %w", err)
 	}
 
+	seen := make(map[string]struct{}, len(achievements))
+	invalidateUsers := make([]string, 0, len(achievements))
+
+	for _, achievement := range achievements {
+		if _, ok := seen[achievement.User]; ok {
+			continue
+		}
+
+		seen[achievement.User] = struct{}{}
+		invalidateUsers = append(invalidateUsers, achievement.User)
+	}
+
+	if err := service.achievementCacheClient.InvalidateUserAchievementsSummaries(ctx, invalidateUsers); err != nil {
+		slog.Error("Invalidate achievements summary cache error", slog.Any("users", invalidateUsers), slog.Any("error", err))
+	}
+
 	notifications := make([]dto.Notification, len(achievements))
 
 	for ind, achievement := range achievements {
@@ -270,6 +286,10 @@ func (service *achievementService) reevalByDiff(diff *dto.RuleDiff) error {
 	if err != nil {
 		slog.Error("Error reeval by rule diff", slog.Any("diff", diff), slog.Any("error", err))
 		return err
+	}
+
+	if err := service.achievementCacheClient.InvalidateUserAchievementsSummaries(context.Background(), users); err != nil {
+		slog.Error("Invalidate achievements summary cache error", slog.Any("users", users), slog.Any("error", err))
 	}
 
 	notifications := make([]dto.Notification, len(users))

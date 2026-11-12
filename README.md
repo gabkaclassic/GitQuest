@@ -198,7 +198,6 @@ New migrations: `make migrate-create` (needs the [migrate CLI](https://github.co
 ## Known limitations
 
 - Redis keeps 30 days of events, so a `0s` window counts the last 30 days, not all history.
-- `GET /achievement/{user}` caches the response for 5 minutes, and new achievements do not reset that cache.
 
 ## License
 
