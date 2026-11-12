@@ -11,9 +11,9 @@ import (
 func TestJWTAuth(t *testing.T) {
 	secret := []byte("secret")
 
-	newToken := func() string {
+	newToken := func(method jwt.SigningMethod) string {
 		claims := jwt.MapClaims{"sub": "u"}
-		tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tok := jwt.NewWithClaims(method, claims)
 		s, _ := tok.SignedString(secret)
 		return s
 	}
@@ -40,9 +40,16 @@ func TestJWTAuth(t *testing.T) {
 		{
 			name:         "valid token",
 			secret:       secret,
-			token:        newToken(),
+			token:        newToken(jwt.SigningMethodHS256),
 			expectStatus: http.StatusOK,
 			expectNext:   true,
+		},
+		{
+			name:         "unexpected signing method",
+			secret:       secret,
+			token:        newToken(jwt.SigningMethodHS512),
+			expectStatus: http.StatusUnauthorized,
+			expectNext:   false,
 		},
 		{
 			name:         "invalid token",

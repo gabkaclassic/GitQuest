@@ -27,7 +27,7 @@ func JWTAuth(secret []byte) func(next http.Handler) http.Handler {
 
 			token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
 				return secret, nil
-			})
+			}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 			if err != nil || !token.Valid {
 				apiErr := api.Unauthorized("invalid token")
 				api.RespondError(w, apiErr)
