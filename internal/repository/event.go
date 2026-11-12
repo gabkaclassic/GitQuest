@@ -75,7 +75,7 @@ func (repository *eventRepository) SaveAll(ctx context.Context, events []dto.Eve
 func (repository *eventRepository) GetAllUsersWithEvents(ctx context.Context) ([]string, error) {
 	users := make([]string, 0)
 	err := executeWithRetry(func() error {
-		rows, err := repository.storage.QueryContext(ctx, "SELECT actor DISTINCT FROM events")
+		rows, err := repository.storage.QueryContext(ctx, "SELECT DISTINCT actor FROM events")
 		if err != nil {
 			return err
 		}

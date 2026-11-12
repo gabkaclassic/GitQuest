@@ -222,7 +222,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"actor"}).
 					AddRow("user1").
 					AddRow("user2")
-				mock.ExpectQuery("SELECT actor DISTINCT FROM events").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT DISTINCT actor FROM events").WillReturnRows(rows)
 			},
 			expectData:  []string{"user1", "user2"},
 			expectError: false,
@@ -230,7 +230,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 		{
 			name: "query error",
 			mockFn: func() {
-				mock.ExpectQuery("SELECT actor DISTINCT FROM events").
+				mock.ExpectQuery("SELECT DISTINCT actor FROM events").
 					WillReturnError(errors.New("fail"))
 			},
 			expectData:  nil,
@@ -240,7 +240,7 @@ func TestEventRepository_GetAllUsersWithEvents(t *testing.T) {
 			name: "scan error",
 			mockFn: func() {
 				rows := sqlmock.NewRows([]string{"actor"}).AddRow(nil)
-				mock.ExpectQuery("SELECT actor DISTINCT FROM events").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT DISTINCT actor FROM events").WillReturnRows(rows)
 			},
 			expectData:  nil,
 			expectError: true,
