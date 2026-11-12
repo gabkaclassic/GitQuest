@@ -1,15 +1,14 @@
-ITERATION ?= 1
 COVERAGE_FILE ?= coverage.out
 COVERAGE_FILTERED ?= coverage_filtered.out
 
-DB_URL = postgres://gitquest-user:password@localhost:5432/gitquest?sslmode=disable
+DB_URL ?= postgres://gitquest-user:password@localhost:5432/gitquest?sslmode=disable
 MIGRATIONS_DIR = ./migrations
 
-.PHONY: build test help
+.PHONY: build test lint hooks mocks migrate-create migrate-up migrate-down migrate-version
 
 build:
-	go build -o build/server cmd/server/main.go
-	go build -o build/token cmd/token/main.go
+	go build -o build/server ./cmd/server
+	go build -o build/token ./cmd/token
 
 test:
 	@echo "==> Running tests with coverage..."
@@ -19,9 +18,19 @@ test:
 	@go tool cover -func=$(COVERAGE_FILTERED)
 	@rm $(COVERAGE_FILTERED)
 
+lint:
+	go vet ./...
+	@test -z "$$(gofmt -l .)" || (gofmt -l . && echo "gofmt: files above need formatting" && exit 1)
+
+hooks:
+	git config core.hooksPath githooks
+
+mocks:
+	mockery
+
 migrate-create:
-    @read -p "Migration name: " name; \
-    migrate create -seq -ext sql -dir $(MIGRATIONS_DIR) $$name
+	@read -p "Migration name: " name; \
+	migrate create -seq -ext sql -dir $(MIGRATIONS_DIR) $$name
 
 migrate-up:
 	migrate -path $(MIGRATIONS_DIR) -database "$(DB_URL)" up
