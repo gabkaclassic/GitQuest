@@ -142,7 +142,7 @@ func ParseConfig() (*Config, error) {
 
 	notificationURL := flag.String("notification-url", cfg.Notification.URL, "User achievements notifications URL")
 	notificationHeader := flag.String("notification-header", cfg.Notification.Header, "User achievements notifications header")
-	notificationHeaderValue := flag.String("notification-header-val", cfg.Notification.URL, "User achievements notifications header value")
+	notificationHeaderValue := flag.String("notification-header-val", cfg.Notification.HeaderValue, "User achievements notifications header value")
 
 	flag.Parse()
 
