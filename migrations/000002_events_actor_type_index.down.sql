@@ -1,1 +1,1 @@
-DROP INDEX IF EXISTS idx_events_actor_type;
+DROP INDEX CONCURRENTLY IF EXISTS idx_events_actor_type;
